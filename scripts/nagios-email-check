@@ -37,11 +37,20 @@ MESSAGE_BODY = "Here are your bridges:"
 STATUS_FILE = "/srv/bridges.torproject.org/check/status"
 
 
+def log(*args, **kwargs):
+    """
+    Generic log function.
+    """
+
+    print("[+]", *args, file=sys.stderr, **kwargs)
+
+
 def get_email_response(password):
     """
     Open our Gmail inbox and see if we got a response.
     """
 
+    log("Checking for email response.")
     mail = imaplib.IMAP4_SSL(SMTP_SERVER)
     try:
         mail.login(FROM_EMAIL, password)
@@ -55,6 +64,7 @@ def get_email_response(password):
 
     id_list = mail_ids.split()
     if len(id_list) == 0:
+        log("Found no response.")
         return CRITICAL, "No emails from BridgeDB found"
 
     return check_email(mail, id_list)
@@ -86,11 +96,13 @@ def check_email(mail, id_list):
                    (MESSAGE_BODY in email_body):
                     mail.store(str(i), "+FLAGS", "\\Deleted")
                     mail.close()
+                    log("Found correct response.")
                     return OK, "BridgeDB's email responder works"
                 else:
                     mail.store(str(i), "+FLAGS", "\\Deleted")
 
         mail.close()
+    log("Found no response.")
     return WARNING, "No emails from BridgeDB found"
 
 
@@ -104,6 +116,7 @@ def send_email_request(password):
     subject = "Bridges"
     body = "get bridges"
 
+    log("Sending email.")
     email_text = """From: %s\nTo: %s\nSubject: %s\n\n%s""" % \
                  (sent_from, ", ".join(sent_to), subject, body)
 
@@ -112,8 +125,10 @@ def send_email_request(password):
         mail.login(sent_from, password)
         mail.sendmail(sent_from, sent_to, email_text)
         mail.close()
+        log("Email successfully sent.")
         return OK, "Sent email bridge request"
     except Exception as e:
+        log("Error while sending email: %s" % err)
         return UNKNOWN, str(e)
 
 
@@ -132,6 +147,7 @@ def write_status_file(status, message):
 
     with open(STATUS_FILE, "w") as fd:
         fd.write("{}\n{}: {}".format(code, status, message))
+    log("Wrote status='%s', message='%s' to status file." % (status, message))
 
 
 if __name__ == "__main__":
@@ -142,6 +158,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         password = sys.argv[1]
     else:
+        log("No email password provided.")
         write_status_file(UNKNOWN, "No email password provided")
         sys.exit(1)
 
@@ -153,7 +170,9 @@ if __name__ == "__main__":
         write_status_file(UNKNOWN, repr(e))
         sys.exit(1)
 
-    time.sleep(300)
+    wait_time = 300
+    log("Waiting %d seconds for a response." % wait_time)
+    time.sleep(wait_time)
 
     # Check if we've received an email response.
 
