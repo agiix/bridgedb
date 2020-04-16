@@ -1,0 +1,225 @@
+From d037867948f8ef5cdf62bbced4bc12a53db009ba Mon Sep 17 00:00:00 2001
+From: agix <columbeff@gmail.com>
+Date: Thu, 16 Apr 2020 17:20:01 +0200
+Subject: [PATCH] Replacing the current Mail parsing option
+
+---
+ bridgedb/distributors/email/autoresponder.py |  6 +-
+ bridgedb/distributors/email/distributor.py   |  8 ++
+ bridgedb/distributors/email/request.py       | 97 ++++++++------------
+ bridgedb/distributors/email/server.py        |  3 +-
+ 4 files changed, 49 insertions(+), 65 deletions(-)
+
+diff --git a/bridgedb/distributors/email/autoresponder.py b/bridgedb/distributors/email/autoresponder.py
+index 3711eae..05085af 100644
+--- a/bridgedb/distributors/email/autoresponder.py
++++ b/bridgedb/distributors/email/autoresponder.py
+@@ -69,7 +69,7 @@ from bridgedb import translations
+ metrix = metrics.EmailMetrics()
+ 
+ 
+-def createResponseBody(lines, context, client, lang='en'):
++def createResponseBody(message, context, client, lang='en'):
+     """Parse the **lines** from an incoming email request and determine how to
+     respond.
+ 
+@@ -95,7 +95,7 @@ def createResponseBody(lines, context, client, lang='en'):
+     translator = translations.installTranslations(lang)
+     bridges = None
+     try:
+-        bridgeRequest = request.determineBridgeRequestOptions(lines)
++        bridgeRequest = request.determineBridgeRequestOptions(message)
+         bridgeRequest.client = str(client)
+ 
+         # The request was invalid, respond with a help email which explains
+@@ -425,7 +425,7 @@ class SMTPAutoresponder(smtp.SMTPClient):
+         lang = translations.getLocaleFromPlusAddr(recipient)
+         logging.info("Client requested email translation: %s" % lang)
+ 
+-        body = createResponseBody(self.incoming.lines,
++        body = createResponseBody(self.incoming.message,
+                                   self.incoming.context,
+                                   client, lang)
+ 
+diff --git a/bridgedb/distributors/email/distributor.py b/bridgedb/distributors/email/distributor.py
+index fbf1a50..cd223d5 100644
+--- a/bridgedb/distributors/email/distributor.py
++++ b/bridgedb/distributors/email/distributor.py
+@@ -63,6 +63,14 @@ class EmailRequestedKey(Exception):
+     """Raised when an incoming email requested a copy of our GnuPG keys."""
+ 
+ 
++class EmailNoTransportSpecified(Exception):
++    """Raised when an incoming email requested a transport without specifying the protocol."""
++
++
++class EmailNoCountryCode(Exception):
++    """Raised when an incoming email requested unblocked bridges but did not specify a country code"""
++
++
+ class EmailDistributor(Distributor):
+     """Object that hands out bridges based on the email address of an incoming
+     request and the current time period.
+diff --git a/bridgedb/distributors/email/request.py b/bridgedb/distributors/email/request.py
+index 83c203d..39c81bd 100644
+--- a/bridgedb/distributors/email/request.py
++++ b/bridgedb/distributors/email/request.py
+@@ -41,34 +41,13 @@ from __future__ import print_function
+ from __future__ import unicode_literals
+ 
+ import logging
+-import re
+ 
+ from bridgedb import bridgerequest
+ from bridgedb.distributors.email.distributor import EmailRequestedHelp
+ from bridgedb.distributors.email.distributor import EmailRequestedKey
+ 
+ 
+-#: A regular expression for matching the Pluggable Transport method TYPE in
+-#: emailed requests for Pluggable Transports.
+-TRANSPORT_REGEXP = ".*transport ([a-z][_a-z0-9]*)"
+-TRANSPORT_PATTERN = re.compile(TRANSPORT_REGEXP)
+-
+-#: A regular expression that matches country codes in requests for unblocked
+-#: bridges.
+-UNBLOCKED_REGEXP = ".*unblocked ([a-z]{2,4})"
+-UNBLOCKED_PATTERN = re.compile(UNBLOCKED_REGEXP)
+-
+-#: Regular expressions that we use to match for email commands.  Any command is
+-#: valid as long as it wasn't quoted, i.e., the line didn't start with a '>'
+-#: character.
+-HELP_LINE      = re.compile("([^>].*)?h[ae]lp")
+-GET_LINE       = re.compile("([^>].*)?get")
+-KEY_LINE       = re.compile("([^>].*)?key")
+-IPV6_LINE      = re.compile("([^>].*)?ipv6")
+-TRANSPORT_LINE = re.compile("([^>].*)?transport")
+-UNBLOCKED_LINE = re.compile("([^>].*)?unblocked")
+-
+-def determineBridgeRequestOptions(lines):
++def determineBridgeRequestOptions(message):
+     """Figure out which :mod:`~bridgedb.filters` to apply, or offer help.
+ 
+     .. note:: If any ``'transport TYPE'`` was requested, or bridges not
+@@ -84,29 +63,41 @@ def determineBridgeRequestOptions(lines):
+         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
+     """
+     request = EmailBridgeRequest()
+-    skippedHeaders = False
++    lines = message.get_payload(0).get_payload().split()
+ 
+-    for line in lines:
+-        line = line.strip().lower()
+-        # Ignore all lines before the first empty line:
+-        if not line: skippedHeaders = True
+-        if not skippedHeaders: continue
++    if len(lines) == 0 or len(lines) == 1 or len(lines) == 2:
++        r = len(lines)
++    else:
++        r = 3
+ 
+-        if HELP_LINE.match(line) is not None:
+-            raise EmailRequestedHelp("Client requested help.")
++    for line in range(r):
++        lines[line] = lines[line].strip().lower()
+ 
+-        if GET_LINE.match(line) is not None:
++        if lines[line] == "help" or lines[line] == "halp":
++            raise EmailRequestedHelp("Client requested help.")
++            break
++        if lines[line] == "get":
+             request.isValid(True)
+-            logging.debug("Email request was valid.")
+-        if KEY_LINE.match(line) is not None:
++            logging.debug("Email request was valid.")            
++        if lines[line] == "key":
+             request.wantsKey(True)
+             raise EmailRequestedKey("Email requested a copy of our GnuPG key.")
+-        if IPV6_LINE.match(line) is not None:
++            break
++        if lines[line] == "ipv6":
+             request.withIPv6()
+-        if TRANSPORT_LINE.match(line) is not None:
+-            request.withPluggableTransportType(line)
+-        if UNBLOCKED_LINE.match(line) is not None:
+-            request.withoutBlockInCountry(line)
++            break
++        if lines[line] == "transport":
++            if lines+1 < r:
++                request.withPluggableTransportType(lines[line+1])
++            else:
++                raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
++            break
++        if lines[line] == "unblocked":
++            if lines+1 < r:
++                request.withoutBlockInCountry(lines[line+1])
++            else:
++                raise EmailNoCountryCode("Email did not specify a country code.")
++            break
+ 
+     logging.debug("Generating hashring filters for request.")
+     request.generateFilters()
+@@ -148,18 +139,10 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
+         :param str country: The line from the email wherein the client
+             requested some type of Pluggable Transport.
+         """
+-        unblocked = None
+-
+-        logging.debug("Parsing 'unblocked' line: %r" % line)
+-        try:
+-            unblocked = UNBLOCKED_PATTERN.match(line).group(1)
+-        except (TypeError, AttributeError):
+-            pass
+-
+-        if unblocked:
+-            self.notBlockedIn.append(unblocked)
+-            logging.info("Email requested bridges not blocked in: %r"
+-                         % unblocked)
++        """TODO: We need to compare the line with a list of all valid country codes"""
++        self.notBlockedIn.append(unblocked)
++        logging.info("Email requested bridges not blocked in: %r"
++                     % unblocked)
+ 
+     def withPluggableTransportType(self, line):
+         """This request included a specific Pluggable Transport identifier.
+@@ -171,14 +154,6 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
+         :param str line: The line from the email wherein the client
+             requested some type of Pluggable Transport.
+         """
+-        transport = None
+-        logging.debug("Parsing 'transport' line: %r" % line)
+-
+-        try:
+-            transport = TRANSPORT_PATTERN.match(line).group(1)
+-        except (TypeError, AttributeError):
+-            pass
+-
+-        if transport:
+-            self.transports.append(transport)
+-            logging.info("Email requested transport type: %r" % transport)
++        """TODO: Check incoming line for valid transport protocol"""
++        self.transports.append(transport)
++        logging.info("Email requested transport type: %r" % transport)
+diff --git a/bridgedb/distributors/email/server.py b/bridgedb/distributors/email/server.py
+index 063b640..b1d1cd8 100644
+--- a/bridgedb/distributors/email/server.py
++++ b/bridgedb/distributors/email/server.py
+@@ -50,6 +50,7 @@ Servers which interface with clients and distribute bridges over SMTP.
+ from __future__ import unicode_literals
+ 
+ import email.message
++from email import policy
+ import logging
+ import io
+ import socket
+@@ -252,7 +253,7 @@ class SMTPMessage(object):
+         :returns: A ``Message`` comprised of all lines received thus far.
+         """
+ 
+-        return email.message_from_string('\n'.join(self.lines))
++        return email.message_from_string('\n'.join(self.lines),policy=policy.compat32)
+ 
+ 
+ @implementer(smtp.IMessageDelivery)
+-- 
+2.21.0 (Apple Git-122.2)
+
