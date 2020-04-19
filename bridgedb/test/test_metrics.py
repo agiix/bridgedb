@@ -229,7 +229,7 @@ class StateTest(unittest.TestCase):
         context = _createMailServerContext(config)
         message = SMTPMessage(context)
         message.lines = mail.copy()
-        message.lines[63] = 'From: %s' % clientAddress
+        message.lines[63] = 'From: foo@gmail.com'
         message.lines[67] = 'To: bridges@localhost'
         message.lines[66] = 'Subject: testing'
         message.lines[73] = 'get bridges'
