@@ -76,7 +76,7 @@ def determineBridgeRequestOptions(lines):
             continue
         line = line.strip().lower()
 
-        if line == "get":
+        elif line == "get":
             request.isValid(True) 
         elif line == "help" or line == "halp":
             raise EmailRequestedHelp("Client requested help.")         
@@ -97,7 +97,7 @@ def determineBridgeRequestOptions(lines):
                 skip = True
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
-        elif:
+        else:
             break
 
     logging.debug("Generating hashring filters for request.")
