@@ -65,8 +65,12 @@ def determineBridgeRequestOptions(lines):
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """
     request = EmailBridgeRequest()
-    msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
-    lines = msg.get_payload(0).get_payload().split()
+    if "HELO" in lines[0]:
+        lines = " ".join(lines)
+        lines = lines.split()
+    else:
+        msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
+        lines = msg.get_payload(0).get_payload().split()
     skip = False
 
     """TODO: in case of transport or blocked the next index in the loop needs to be skipped, othwerwise the loop will break"""
