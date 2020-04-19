@@ -76,8 +76,9 @@ def determineBridgeRequestOptions(lines):
             continue
         line = line.strip().lower()
 
-        elif line == "get":
+        if line == "get":
             request.isValid(True) 
+            continue
         elif line == "help" or line == "halp":
             raise EmailRequestedHelp("Client requested help.")         
         elif line == "key":
