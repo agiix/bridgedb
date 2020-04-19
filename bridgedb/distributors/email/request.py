@@ -41,7 +41,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import mail
+import email
 from email import policy
 
 from bridgedb import bridgerequest
