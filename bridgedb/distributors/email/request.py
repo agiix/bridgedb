@@ -65,7 +65,6 @@ def determineBridgeRequestOptions(lines):
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """
     request = EmailBridgeRequest()
-    request.valid = False
     msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
     lines = msg.get_payload(0).get_payload().split()
     skip = False
