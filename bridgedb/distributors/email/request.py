@@ -97,7 +97,7 @@ def determineBridgeRequestOptions(lines):
                 skip = True
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
-        else:
+        elif:
             break
 
     logging.debug("Generating hashring filters for request.")
