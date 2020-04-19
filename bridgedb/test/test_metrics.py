@@ -228,11 +228,14 @@ class StateTest(unittest.TestCase):
         config = _createConfig()
         context = _createMailServerContext(config)
         message = SMTPMessage(context)
-        message.lines = mail.copy()
-        message.lines[63] = 'From: foo@gmail.com'
-        message.lines[67] = 'To: bridges@localhost'
-        message.lines[66] = 'Subject: testing'
-        message.lines[73] = 'get bridges'
+        message.lines = [
+            "From: foo@gmail.com",
+            "To: bridges@torproject.org",
+            "Subject: testing",
+            "",
+            "get transport obfs4",
+        ]
+        
         message.message = message.getIncomingMessage()
         responder = message.responder
         tr = proto_helpers.StringTransportWithDisconnection()
