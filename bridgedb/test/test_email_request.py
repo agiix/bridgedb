@@ -109,14 +109,14 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
 
     def test_determineBridgeRequestOptions_get_help(self):
         """Requesting 'get help' should raise EmailRequestedHelp."""
-        lines = mail
+        lines = mail.copy()
         lines[73] = 'get help'
         self.assertRaises(request.EmailRequestedHelp,
                           request.determineBridgeRequestOptions, lines)
         
     def test_determineBridgeRequestOptions_get_halp(self):
         """Requesting 'get halp' should raise EmailRequestedHelp."""
-        lines = mail
+        lines = mail.copy()
         lines[73] = 'get halp'
         self.assertRaises(request.EmailRequestedHelp,
                           request.determineBridgeRequestOptions, lines)
@@ -130,7 +130,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
 
     def test_determineBridgeRequestOptions_multiline_invalid(self):
         """Requests without a 'get' anywhere should be considered invalid."""
-        lines = mail
+        lines = mail.copy()
         lines[73] = ''
         lines.insert(74,'transport obfs3')
         lines.insert(75,'ipv6 vanilla bridges')
@@ -148,7 +148,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
     #def test_determineBridgeRequestOptions_multiline_valid(self):
         """Though requests with a 'get' are considered valid."""
         """Not defined yet
-        lines = mail
+        lines = mail.copy()
         lines[73] = ''
         lines.insert(74,'transport obfs3')
         lines.insert(75,'vanilla bridges'')
@@ -192,7 +192,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
 
     def test_determineBridgeRequestOptions_get_transport(self):
         """An invalid request for 'transport obfs3' (missing the 'get')."""
-        lines = mail
+        lines = mail.copy()
         lines[73] = 'transport obfs3'
         reqvest = request.determineBridgeRequestOptions(lines)
         self.assertEqual(len(reqvest.transports), 1)
@@ -201,7 +201,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         
     def test_determineBridgeRequestOptions_get_ipv6(self):
         """An valid request for 'get ipv6'."""
-        lines = mail
+        lines = mail.copy()
         lines[73] = ''
         lines.insert(74,'get ipv6')
         reqvest = request.determineBridgeRequestOptions(lines)
