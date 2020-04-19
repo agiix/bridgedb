@@ -197,7 +197,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         reqvest = request.determineBridgeRequestOptions(lines)
         self.assertEqual(len(reqvest.transports), 1)
         self.assertEqual(reqvest.transports[0], 'obfs3')
-        self.assertEqual(reqvest.isValid(), False, 'Result: ',reqvest.isValid())
+        self.assertEqual(reqvest.isValid(), False, reqvest.isValid())
         
     def test_determineBridgeRequestOptions_get_ipv6(self):
         """An valid request for 'get ipv6'."""
