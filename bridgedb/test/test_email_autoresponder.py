@@ -137,7 +137,7 @@ class CreateResponseBodyTests(unittest.TestCase):
     def _getIncomingLines(self, clientAddress="user@example.com"):
         """Generate the lines of an incoming email from **clientAddress**."""
         self.toAddress = Address(clientAddress)
-        lines = mail
+        lines = mail.copy()
         lines[63] = 'From: %s' % clientAddress
         lines[67] = 'To: bridges@localhost'
         lines[66] = 'Subject: testing'
