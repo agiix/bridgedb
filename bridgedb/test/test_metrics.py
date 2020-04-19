@@ -29,6 +29,90 @@ from bridgedb.distributors.moat import server
 from twisted.trial import unittest
 from twisted.test import proto_helpers
 
+mail = ['Delivered-To: bridges@tortest.org',
+'Received: by 2002:a05:6602:13d4:0:0:0:0 with SMTP id o20csp2120992iov;',
+'        Sat, 18 Apr 2020 10:46:14 -0700 (PDT)',
+'X-Received: by 2002:a17:906:9494:: with SMTP id t20mr8335871ejx.51.1587231973984;',
+'        Sat, 18 Apr 2020 10:46:13 -0700 (PDT)',
+'ARC-Seal: i=1; a=rsa-sha256; t=1587231973; cv=none;',
+'        d=tortest.org; s=arc-20160816;',
+'        b=P++gupCMle0gEDuiOC97BZ73JV9jpGZ5FGDSaU6XCcpqRUUJQqGlXc88xtzL7iqV3K',
+'         x+Hs2WTpfVaS5fAYMqY7MD4RyVLv0yzRRnA1d/JXMBDBPydD+FUqyLlt04AG/+R5W6Hd',
+'         6IbkC0f2vatBC0J/3A3sqDDoOHSSMx++BdCa76OSRtChiDayc0KTlBFafwJ58Yntdylo',
+'         VHCBD8T9eyiEOctHHzCHUx2JMmDaa1Mi8mj0WSxMUxUl6GntFL7ELMSGriQbutuCgLPk',
+'         lcPKcyCEfVlwSpJc+SGyvW8MoCJVROVnkLmYKxLYrwDMTzF6+eUku+vTI0VEtPGOp2J8',
+'         kkjg==',
+'ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=tortest.org; s=arc-20160816;',
+'        h=to:subject:message-id:date:from:mime-version:dkim-signature;',
+'        bh=bGAfoz3V4Jo7aM4K+tXFmdSxzqmIPLMt8hH0zv25iC4=;',
+'        b=XTvn86uetPgooCDFYA9PoiRlZpp2Kf1mWymCFe9vlXqkd1vvPy/Q0bAH3Pj3C9trNm',
+'         QxP+ozkCw0lLvqRhFmAbxbi+pz+rP1YZH/c73F0jYxq0uM8dlBXxcnJgYkQ5YQfwql8M',
+'         kwi08uhTZ70xkwsnq0xkyH00iSLEcR3++p+4yFtwWB0aPqoVyVbdxRuN5QWczECQ897b',
+'         Wt22bch+EECXsQJzhfjPHVF9GWSddxd/IsF3mUkeVGmESX74yd0EKWvw7RrqqN7ktWvb',
+'         AQTCK82cNsL/hlOqFuCFCIlMlcjqsX3IDAp8voUaArl4vwcZFPlfvj0SZc+PnKsQDpSN',
+'         6Bjg==',
+'ARC-Authentication-Results: i=1; mx.tortest.org;',
+'       dkim=pass header.i=@tortest.org header.s=20161025 header.b=dnKseKKK;',
+'       spf=pass (example.com: domain of user@example.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=user@example.com;',
+'       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=example.com',
+'Return-Path: <user@example.com>',
+'Received: from mail-sor-f41.tortest.org (mail-sor-f41.tortest.org. [209.85.220.41])',
+'        by mx.tortest.org with SMTPS id k15sor8971328ejx.14.2020.04.18.10.46.13',
+'        for <bridges@tortest.org>',
+'        (Google Transport Security);',
+'        Sat, 18 Apr 2020 10:46:13 -0700 (PDT)',
+'Received-SPF: pass (example.com: domain of user@example.com designates 209.85.220.41 as permitted sender) client-ip=209.85.220.41;',
+'Authentication-Results: mx.example.com;',
+'       dkim=pass header.i=@example.com header.s=20161025 header.b=dnKseKKK;',
+'       spf=pass (example.com: domain of user@example.com designates 209.85.220.41 as permitted sender) smtp.mailfrom=user@example.com;',
+'       dmarc=pass (p=NONE sp=QUARANTINE dis=NONE) header.from=example.com',
+'DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;',
+'        d=example.com; s=20161025;',
+'        h=mime-version:from:date:message-id:subject:to;',
+'        bh=bGAfoz3V4Jo7aM4K+tXFmdSxzqmIPLMt8hH0zv25iC4=;',
+'        b=dnKseKKKZ7d7Z/bvTrwP3ZSxd91nqHC8dwSn6UHPVu+eD8Ke43K/lmtWKofTUHudtA',
+'         mQKK1+jtJy9o1+UgY0ZOHiYi/h9fzRF6mH5aMDUfUWO4yJYROC/sZeW3an3Jy0i+Cdrd',
+'         TV9W8P4FqfRjxJo/01NXd8hqg8qZtZWASacPI6j+B7eJltUmkWVFWfPNyDxb57GLkaEa',
+'         7p4S9bL50ArlRAGT0wwTok0hhrNUgfQVfBdUiPiP0ACXbKSAWQCzaEJsd+TmwFpzKNt1',
+'         EuHv+ae0kwBXnKZbcbj6p5RCKjWuDTcp0/9fY2t8Wf6VLHZ3J50aHiXSjXabbyq/4qFs',
+'         Dohg==',
+'X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;',
+'        d=1e100.net; s=20161025;',
+'        h=x-gm-message-state:mime-version:from:date:message-id:subject:to;',
+'        bh=bGAfoz3V4Jo7aM4K+tXFmdSxzqmIPLMt8hH0zv25iC4=;',
+'        b=ga/FK2aWV3csNHHFZRjSd0UqnJ/COjSgKZpKHFdXvK3UQTpD0/slGbOgCPiJfV3cnG',
+'         lwJAcPqHA/7RTNmuB7z9O7K2iW/0C+Kw6vdfMImCQIJEOqazqmPRQpAxHv3aAQy8eWuK',
+'         6as6RkAN8du01qxZ0ni/XCzPWaop5+spOJqy4bvG8lbch3fNsuTfc0oPmVqMNH9jNtEK',
+'         MwOo1o8dR9qvxvPzLtoHc/UOX+LzB3vPqxDZhVftgScDjtEZJ0lhy30j/kgoT4UyAb8j',
+'         YWawJhlkTMyVSQQOXc0g6nh9EzOHrTf1LkWhE3QtUrKIFx1gXrEJ3HCfc+DYajzLfbwt',
+'         0W5w==',
+'X-Gm-Message-State: AGi0PuZiNB23KPSM3218BJ+ejDtFOPoxrppWlcZQeMr/W/nrlHbDHLSx',
+'	qlkG3KwOxibUYhWjjIqX6vjv9ssCICutisRpgc4yoSgJ',
+'X-Google-Smtp-Source: APiQypIqfkeHyhDpaI7rV9Tv3BYYu6rKuC29wUw7HYU+MXfA2tILZGUFaF70BgURZf7KQn3eNjXM1j2pWkrX8Iu/fR4=',
+'X-Received: by 2002:a17:906:b7da:: with SMTP id fy26mr8934480ejb.327.1587231973509;',
+' Sat, 18 Apr 2020 10:46:13 -0700 (PDT)',
+'MIME-Version: 1.0',
+'From: User <user@example.com>',
+'Date: Sat, 18 Apr 2020 19:46:02 +0200',
+'Message-ID: <CANv2OEusjGMY5x9_z5O2=Rg1AjKqUOfSng+sBRheH37U5hq84Q@mail.example.com>',
+'Subject:', 
+'To: "bridges@tortest.org" <bridges@tortest.org>',
+'Content-Type: multipart/alternative; boundary="000000000000f50d9a05a3943d32"',
+'',
+'--000000000000f50d9a05a3943d32',
+'Content-Type: text/plain; charset="UTF-8"',
+'',
+'get transport obfs4',
+'',
+'--000000000000f50d9a05a3943d32',
+'Content-Type: text/html; charset="UTF-8"',
+'Content-Transfer-Encoding: quoted-printable',
+'',
+'<div dir=3D"auto">get transport obfs4=C2=A0<br></div><div dir=3D"auto"><br>=',
+'</div>',
+'',
+'--000000000000f50d9a05a3943d32--']
+
 
 class StateTest(unittest.TestCase):
 
@@ -140,18 +224,15 @@ class StateTest(unittest.TestCase):
         metrics.resolveCountryCode = origFunc
 
     def test_email_metrics(self):
-
+        
         config = _createConfig()
         context = _createMailServerContext(config)
         message = SMTPMessage(context)
-        message.lines = [
-            "From: foo@gmail.com",
-            "To: bridges@torproject.org",
-            "Subject: testing",
-            "",
-            "get transport obfs4",
-        ]
-
+        message.lines = mail.copy()
+        message.lines[63] = 'From: %s' % clientAddress
+        message.lines[67] = 'To: bridges@localhost'
+        message.lines[66] = 'Subject: testing'
+        message.lines[73] = 'get bridges'
         message.message = message.getIncomingMessage()
         responder = message.responder
         tr = proto_helpers.StringTransportWithDisconnection()
