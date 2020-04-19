@@ -68,7 +68,7 @@ def determineBridgeRequestOptions(lines):
     msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
     lines = msg.get_payload(0).get_payload().split()
 
-    for line in range(r):
+    for line in lines:
         line = line.strip().lower()
 
         if line == "help" or line == "halp":
