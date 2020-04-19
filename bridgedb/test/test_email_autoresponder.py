@@ -129,7 +129,7 @@ class CreateResponseBodyTests(unittest.TestCase):
     def setUp(self):
         """Create fake email, distributor, and associated context data."""
         self._moveGPGTestKeyfile()
-        self.toAddress = "user@example.com"
+        self.toAddress = 'user@example.com'
         self.config = _createConfig()
         self.ctx = _createMailServerContext(self.config)
         self.distributor = self.ctx.distributor
@@ -147,21 +147,21 @@ class CreateResponseBodyTests(unittest.TestCase):
     def test_createResponseBody_getKey(self):
         """A request for 'get key' should receive our GPG key."""
         lines = self._getIncomingLines()
-        lines[73] = = "get key"
+        lines[73] = 'get key'
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring('-----BEGIN PGP PUBLIC KEY BLOCK-----', ret)
 
     def test_createResponseBody_bridges_invalid(self):
         """An invalid request for 'transport obfs3' should get help text."""
         lines = self._getIncomingLines("testing@localhost")
-        lines[73] = "transport obfs3"
+        lines[73] = 'transport obfs3'
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring("COMMANDs", ret)
 
     def test_createResponseBody_bridges_obfs3(self):
         """A request for 'get transport obfs3' should receive a response."""
         lines = self._getIncomingLines("testing@localhost")
-        lines[73] = "get transport obfs3"
+        lines[73] = 'get transport obfs3'
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring("Here are your bridges", ret)
         self.assertSubstring("obfs3", ret)
@@ -169,7 +169,7 @@ class CreateResponseBodyTests(unittest.TestCase):
     def test_createResponseBody_bridges_obfsobfswebz(self):
         """We should only pay attention to the *last* in a crazy request."""
         lines = self._getIncomingLines("testing@localhost")
-        lines[73] = "get unblocked webz"
+        lines[73] = 'get unblocked webz'
         lines.insert(74,'get transport obfs2')
         lines.insert(75,'get transport obfs3')
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)

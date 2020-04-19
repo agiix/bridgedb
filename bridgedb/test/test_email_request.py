@@ -133,7 +133,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         msg = mail
         msg[73] = ''
         msg.insert(74,'transport obfs3')
-        msg.insert(75,'ipv6 vanilla bridges'')
+        msg.insert(75,'ipv6 vanilla bridges')
         msg.insert(76,'give me your gpgs')
         reqvest = request.determineBridgeRequestOptions(lines)
         # It's invalid because it didn't include a 'get' anywhere.
