@@ -123,7 +123,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         
     def test_determineBridgeRequestOptions_get_key(self):
         """Requesting 'get key' should raise EmailRequestedKey."""
-        lines = mail
+        lines = mail.copy()
         lines[73] = 'get key'
         self.assertRaises(request.EmailRequestedKey,
                           request.determineBridgeRequestOptions, lines)
