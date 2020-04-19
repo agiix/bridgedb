@@ -65,7 +65,7 @@ def determineBridgeRequestOptions(lines):
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """
     request = EmailBridgeRequest()
-    if "HELO" in lines or "FROM" in lines[0]:
+    if "foo@gmail.com" in lines:
         lines = " ".join(lines)
         lines = lines.split()
     else:
