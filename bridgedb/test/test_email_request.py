@@ -109,32 +109,32 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
 
     def test_determineBridgeRequestOptions_get_help(self):
         """Requesting 'get help' should raise EmailRequestedHelp."""
-        msg = mail
-        msg[73] = 'get help'
+        lines = mail
+        lines[73] = 'get help'
         self.assertRaises(request.EmailRequestedHelp,
                           request.determineBridgeRequestOptions, lines)
         
     def test_determineBridgeRequestOptions_get_halp(self):
         """Requesting 'get halp' should raise EmailRequestedHelp."""
-        msg = mail
-        msg[73] = 'get halp'
+        lines = mail
+        lines[73] = 'get halp'
         self.assertRaises(request.EmailRequestedHelp,
                           request.determineBridgeRequestOptions, lines)
         
     def test_determineBridgeRequestOptions_get_key(self):
         """Requesting 'get key' should raise EmailRequestedKey."""
-        msg = mail
-        msg[73] = 'get key'
+        lines = mail
+        lines[73] = 'get key'
         self.assertRaises(request.EmailRequestedKey,
                           request.determineBridgeRequestOptions, lines)
 
     def test_determineBridgeRequestOptions_multiline_invalid(self):
         """Requests without a 'get' anywhere should be considered invalid."""
-        msg = mail
-        msg[73] = ''
-        msg.insert(74,'transport obfs3')
-        msg.insert(75,'ipv6 vanilla bridges')
-        msg.insert(76,'give me your gpgs')
+        lines = mail
+        lines[73] = ''
+        lines.insert(74,'transport obfs3')
+        lines.insert(75,'ipv6 vanilla bridges')
+        lines.insert(76,'give me your gpgs')
         reqvest = request.determineBridgeRequestOptions(lines)
         # It's invalid because it didn't include a 'get' anywhere.
         self.assertEqual(reqvest.isValid(), False)
@@ -148,11 +148,11 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
     #def test_determineBridgeRequestOptions_multiline_valid(self):
         """Though requests with a 'get' are considered valid."""
         """Not defined yet
-        msg = mail
-        msg[73] = ''
-        msg.insert(74,'transport obfs3')
-        msg.insert(75,'vanilla bridges'')
-        msg.insert(76,'transport scramblesuit unblocked ca)
+        lines = mail
+        lines[73] = ''
+        lines.insert(74,'transport obfs3')
+        lines.insert(75,'vanilla bridges'')
+        lines.insert(76,'transport scramblesuit unblocked ca)
         reqvest = request.determineBridgeRequestOptions(lines)
         # It's valid because it included a 'get'.
         self.assertEqual(reqvest.isValid(), True)
@@ -192,8 +192,8 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
 
     def test_determineBridgeRequestOptions_get_transport(self):
         """An invalid request for 'transport obfs3' (missing the 'get')."""
-        msg = mail
-        msg[73] = 'transport obfs3'
+        lines = mail
+        lines[73] = 'transport obfs3'
         reqvest = request.determineBridgeRequestOptions(lines)
         self.assertEqual(len(reqvest.transports), 1)
         self.assertEqual(reqvest.transports[0], 'obfs3')
@@ -201,9 +201,9 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         
     def test_determineBridgeRequestOptions_get_ipv6(self):
         """An valid request for 'get ipv6'."""
-        msg = mail
-        msg[73] = ''
-        msg.insert(74,'get ipv6')
+        lines = mail
+        lines[73] = ''
+        lines.insert(74,'get ipv6')
         reqvest = request.determineBridgeRequestOptions(lines)
         self.assertIs(reqvest.ipVersion, 6)
         self.assertEqual(reqvest.isValid(), True)
