@@ -68,7 +68,8 @@ def determineBridgeRequestOptions(lines):
     msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
     lines = msg.get_payload(0).get_payload().split()
 
-    for line in lines:
+    """TODO: in case of transport or blocked the next index in the loop needs to be skipped, othwerwise the loop will break"""
+    for i, line in enumerate(lines):
         line = line.strip().lower()
 
         if line == "help" or line == "halp":
@@ -81,13 +82,13 @@ def determineBridgeRequestOptions(lines):
         if line == "ipv6":
             request.withIPv6()
         if line == "transport":
-            if line+1 < len(lines):
-                request.withPluggableTransportType(lines[line+1])
+            if i < len(lines):
+                request.withPluggableTransportType(lines[i+1])
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         if line == "unblocked":
-            if line+1 < len(lines):
-                request.withoutBlockInCountry(lines[line+1])
+            if i < len(lines):
+                request.withoutBlockInCountry(lines[i+1])
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
         else:
