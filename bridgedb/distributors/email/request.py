@@ -67,9 +67,13 @@ def determineBridgeRequestOptions(lines):
     request = EmailBridgeRequest()
     msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
     lines = msg.get_payload(0).get_payload().split()
+    skip = False
 
     """TODO: in case of transport or blocked the next index in the loop needs to be skipped, othwerwise the loop will break"""
     for i, line in enumerate(lines):
+        if skip == True: 
+            skip = False
+            continue
         line = line.strip().lower()
 
         if line == "get":
@@ -84,11 +88,13 @@ def determineBridgeRequestOptions(lines):
         elif line == "transport":
             if i < len(lines):
                 request.withPluggableTransportType(lines[i+1])
+                skip = True
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif line == "unblocked":
             if i < len(lines):
                 request.withoutBlockInCountry(lines[i+1])
+                skip = True
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
         else:
