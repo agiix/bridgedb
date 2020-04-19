@@ -72,21 +72,21 @@ def determineBridgeRequestOptions(lines):
     for i, line in enumerate(lines):
         line = line.strip().lower()
 
-        if line == "help" or line == "halp":
-            raise EmailRequestedHelp("Client requested help.")
         if line == "get":
-            request.isValid(True)          
-        if line == "key":
+            request.isValid(True) 
+        elif line == "help" or line == "halp":
+            raise EmailRequestedHelp("Client requested help.")         
+        elif line == "key":
             request.wantsKey(True)
             raise EmailRequestedKey("Email requested a copy of our GnuPG key.")
-        if line == "ipv6":
+        elif line == "ipv6":
             request.withIPv6()
-        if line == "transport":
+        elif line == "transport":
             if i < len(lines):
                 request.withPluggableTransportType(lines[i+1])
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
-        if line == "unblocked":
+        elif line == "unblocked":
             if i < len(lines):
                 request.withoutBlockInCountry(lines[i+1])
             else:
