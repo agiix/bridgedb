@@ -296,15 +296,15 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 3)
 
-    def test_EmailBridgeRequest_withoutBlockInCountry_singleline_cn_ir_li(self):
+    #def test_EmailBridgeRequest_withoutBlockInCountry_singleline_cn_ir_li(self):
         """Requests for multiple unblocked countries which are all on the same
         'get unblocked' line will use only the *first* country code.
         """
         """Not possible with the current parsing method, since it will only check for one country code
-        after the keyword unblocked"""
+        after the keyword unblocked
         self.request.withoutBlockInCountry('get unblocked cn ir li')
         self.assertIsInstance(self.request.notBlockedIn, list)
-        self.assertEqual(len(self.request.notBlockedIn), 1)
+        self.assertEqual(len(self.request.notBlockedIn), 1)"""
 
     def test_EmailBridgeRequest_withPluggableTransportType_SCRAMBLESUIT(self):
         """Transports which aren't in lowercase should be ignored."""
@@ -342,7 +342,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         'get transport' line will use only the *first* transport.
         """
         """Not possible with the current parsing method, since it will only check for one transport protocol
-        after the keyword transport"""
+        after the keyword transport
         self.request.withPluggableTransportType('get transport obfs3 obfs2 scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
