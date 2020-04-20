@@ -78,11 +78,7 @@ def determineBridgeRequestOptions(lines):
             if "testing" in line.strip().lower():
                 testing = True
         lines = newlines
-        
-
-
-
-
+    skip = False
     """TODO: in case of transport or blocked the next index in the loop needs to be skipped, othwerwise the loop will break"""
     for i, line in enumerate(lines):
         if skip == True: 
