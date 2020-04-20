@@ -65,13 +65,23 @@ def determineBridgeRequestOptions(lines):
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """
     request = EmailBridgeRequest()
-    if "foo@gmail.com" in lines:
-        lines = " ".join(lines)
-        lines = lines.split()
-    else:
-        msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
+    msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
+    if type(msg.get_payload()) is list:
         lines = msg.get_payload(0).get_payload().split()
-    skip = False
+    else:
+        payload = msg.get_payload().split()
+        testing = False
+        newlines = []
+        for line in testlines:
+            if testing == True and line != '""':
+                newlines.append(line)
+            if "testing" in line.strip().lower():
+                testing = True
+        lines = newlines
+        
+
+
+
 
     """TODO: in case of transport or blocked the next index in the loop needs to be skipped, othwerwise the loop will break"""
     for i, line in enumerate(lines):
