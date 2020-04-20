@@ -72,7 +72,7 @@ def determineBridgeRequestOptions(lines):
         payload = msg.get_payload().split()
         testing = False
         newlines = []
-        for line in testlines:
+        for line in lines:
             if testing == True and line != '""':
                 newlines.append(line)
             if "testing" in line.strip().lower():
