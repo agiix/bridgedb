@@ -354,9 +354,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
         """Requests for whacky transports that don't should not be appended."""
-        arguments = ['whack',0]
+        protocols = ['whack']
         self.assertRaises(request.EmailNoTransportSpecified,
-                          self.request.withPluggableTransportType, arguments)
+                          self.request.withPluggableTransportType, protocols, 0)
 
 
     def test_EmailBridgeRequest_justOnePTType_obfs3_obfs2_scramblesuit(self):
