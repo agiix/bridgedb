@@ -149,7 +149,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         """
         countrymatch = False
         skipindex = 0
-        for country in lines[index:]:
+        for country in lines[i:]:
             if len(country) == 2:
                 self.notBlockedIn.append(country)
                 logging.info("Email requested bridges not blocked in: %r"

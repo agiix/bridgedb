@@ -277,13 +277,15 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn(self):
         """Lowercased country codes are okay though."""
-        self.request.withoutBlockInCountry('cn')
+        countries = ['cn']
+        self.request.withoutBlockInCountry(countries,0)
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn_getMissing(self):
         """Lowercased country codes are still okay if the 'get' is missing."""
-        self.request.withoutBlockInCountry('cn')
+        countries = ['cn']
+        self.request.withoutBlockInCountry(countries,0)
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
@@ -291,9 +293,8 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple unblocked countries should compound if they
         are on separate 'get unblocked' lines.
         """
-        self.request.withoutBlockInCountry('cn')
-        self.request.withoutBlockInCountry('ir')
-        self.request.withoutBlockInCountry('li')
+        countries = ['cn','ir','li']
+        self.request.withoutBlockInCountry(countries,0)        
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 3)
 
@@ -316,14 +317,16 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit(self):
         """Lowercased transports are okay though."""
-        self.request.withPluggableTransportType('scramblesuit')
+        protocols = ['scramblesuit']
+        self.request.withPluggableTransportType(protocols,0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
 
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit_getMissing(self):
         """Lowercased transports are still okay if 'get' is missing."""
-        self.request.withPluggableTransportType('scramblesuit')
+        protocols = ['scramblesuit']
+        self.request.withPluggableTransportType(protocols,0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
@@ -332,9 +335,8 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple pluggable transports should compound if they
         are on separate 'get transport' lines.
         """
-        self.request.withPluggableTransportType('obfs3')
-        self.request.withPluggableTransportType('obfs2')
-        self.request.withPluggableTransportType('scramblesuit')
+        protocols = ['obfs3','obfs2','scramblesuit']
+        self.request.withPluggableTransportType(protocols,0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')
@@ -351,20 +353,20 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.assertEqual(self.request.transports[0], 'obfs3')"""
 
     def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
-        """Requests for whacky transports that don't exist are also okay."""
-        self.request.withPluggableTransportType('whack')
+        """Requests for whacky transports that don't should not be appended."""
+        protocols = ['whack']
+        self.request.withPluggableTransportType(protocols,0)
         self.assertIsInstance(self.request.transports, list)
-        self.assertEqual(len(self.request.transports), 1)
-        self.assertEqual(self.request.transports[0], 'whack')
+        self.assertEqual(len(self.request.transports), 0)
+
 
     def test_EmailBridgeRequest_justOnePTType_obfs3_obfs2_scramblesuit(self):
         """Requests for multiple transports when
         ``EmailBridgeRequest.justOneTransport()`` is used will use only the
         *last* transport.
         """
-        self.request.withPluggableTransportType('obfs3')
-        self.request.withPluggableTransportType('obfs2')
-        self.request.withPluggableTransportType('scramblesuit')
+        protocols = ['obfs3','obfs2','scramblesuit']
+        self.request.withPluggableTransportType(protocols,0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')
