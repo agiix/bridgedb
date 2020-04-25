@@ -166,10 +166,10 @@ class CreateResponseBodyTests(unittest.TestCase):
         self.assertSubstring("Here are your bridges", ret)
         self.assertSubstring("obfs3", ret)
 
-    def test_createResponseBody_bridges_obfsobfswebz(self):
+    def test_createResponseBody_bridges_obfsobfsbz(self):
         """We should only pay attention to the *last* in a crazy request."""
         lines = self._getIncomingLines("testing@localhost")
-        lines[73] = 'get unblocked webz'
+        lines[73] = 'get unblocked bz'
         lines.insert(74,'get transport obfs2')
         lines.insert(75,'get transport obfs3')
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
