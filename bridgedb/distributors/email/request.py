@@ -72,20 +72,21 @@ def determineBridgeRequestOptions(lines):
         payload = msg.get_payload().split()
         testing = False
         newlines = []
-        for line in lines:
+        for line in payload:
             if testing == True and line != '""':
                 newlines.append(line)
             if "testing" in line.strip().lower():
                 testing = True
         lines = newlines
 
-    transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
+    skipindex = 0
     for i, line in enumerate(lines):
+        if i < skipindex:
+            continue
         line = line.strip().lower()
 
         if line == "get":
             request.isValid(True) 
-            continue
         elif line == "help" or line == "halp":
             raise EmailRequestedHelp("Client requested help.")         
         elif line == "key":
@@ -95,28 +96,12 @@ def determineBridgeRequestOptions(lines):
             request.withIPv6()
         elif line == "transport":
             if i < len(lines):
-                protocolmatch = False
-                for protocol in lines[i+1:]:
-                    if protocol in transport_protocols:
-                        request.withPluggableTransportType(protocol)
-                        protocolmatch = True
-                    else:
-                        if protocolmatch == False:
-                            raise EmailNoTransportSpecified("Email does not specify a transport protocol.") 
-                        break
+                skipindex = i+request.withoutBlockInCountry(lines,i)+1
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif line == "unblocked":
             if i < len(lines):
-                countrymatch = False
-                for country in lines[i+1:]:
-                    if len(country) == 2:
-                        request.withoutBlockInCountry(country)
-                        countrymatch = True
-                    else:
-                        if countrymatch == False:
-                            raise EmailNoCountryCode("Email did not specify a country code.")
-                        break
+                skipindex = i+request.withoutBlockInCountry(lines,i)+1
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
         else:
@@ -152,7 +137,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
             self._wantsKey = bool(wantsKey)
         return self._wantsKey
 
-    def withoutBlockInCountry(self, line):
+    def withoutBlockInCountry(self, line, i):
         """This request was for bridges not blocked in **country**.
 
         Add any country code found in the **line** to the list of
@@ -162,11 +147,22 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         :param str country: The line from the email wherein the client
             requested some type of Pluggable Transport.
         """
-        self.notBlockedIn.append(line)
-        logging.info("Email requested bridges not blocked in: %r"
-                     % line)
+        countrymatch = False
+        skipindex = 0
+        for country in lines[index:]:
+            if len(country) == 2:
+                self.notBlockedIn.append(country)
+                logging.info("Email requested bridges not blocked in: %r"
+                             % country)            
+                countrymatch = True
+                skipindex += 1        
+            else:
+                if countrymatch == False:
+                    raise EmailNoCountryCode("Email did not specify a country code.")
+                break             
+        return skipindex
 
-    def withPluggableTransportType(self, line):
+    def withPluggableTransportType(self, lines, i):
         """This request included a specific Pluggable Transport identifier.
 
         Add any Pluggable Transport method TYPE found in the **line** to the
@@ -176,5 +172,17 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         :param str line: The line from the email wherein the client
             requested some type of Pluggable Transport.
         """
-        self.transports.append(line)
-        logging.info("Email requested transport type: %r" % line)
+        transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
+        protocolmatch = False
+        skipindex = 0
+        for protocol in lines[i:]:
+            if protocol in transport_protocols:
+                self.transports.append(protocol)
+                protocolmatch = True
+                skipindex += 1
+                logging.info("Email requested transport type: %r" % protocol)
+            else:
+                if protocolmatch == False:
+                    raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
+                break    
+        return skipindex           
