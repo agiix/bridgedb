@@ -78,12 +78,9 @@ def determineBridgeRequestOptions(lines):
             if "testing" in line.strip().lower():
                 testing = True
         lines = newlines
-    skip = False
-    """TODO: in case of transport or blocked the next index in the loop needs to be skipped, othwerwise the loop will break"""
+
+    transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
     for i, line in enumerate(lines):
-        if skip == True: 
-            skip = False
-            continue
         line = line.strip().lower()
 
         if line == "get":
@@ -98,14 +95,28 @@ def determineBridgeRequestOptions(lines):
             request.withIPv6()
         elif line == "transport":
             if i < len(lines):
-                request.withPluggableTransportType(lines[i+1])
-                skip = True
+                protocolmatch = False
+                for protocol in lines[i+1:]:
+                    if protocol in transport_protocols:
+                        request.withPluggableTransportType(protocol)
+                        protocolmatch = True
+                    else:
+                        if protocolmatch == False:
+                            raise EmailNoTransportSpecified("Email does not specify a transport protocol.") 
+                        break
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif line == "unblocked":
             if i < len(lines):
-                request.withoutBlockInCountry(lines[i+1])
-                skip = True
+                countrymatch = False
+                for country in lines[i+1:]:
+                    if len(country) == 2:
+                        request.withoutBlockInCountry(country)
+                        countrymatch = True
+                    else:
+                        if countrymatch == False:
+                            raise EmailNoCountryCode("Email did not specify a country code.")
+                        break
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
         else:
