@@ -47,6 +47,8 @@ from email import policy
 from bridgedb import bridgerequest
 from bridgedb.distributors.email.distributor import EmailRequestedHelp
 from bridgedb.distributors.email.distributor import EmailRequestedKey
+from bridgedb.distributors.email.distributor import EmailNoTransportSpecified
+from bridgedb.distributors.email.distributor import EmailNoCountryCode
 
 
 def determineBridgeRequestOptions(lines):
@@ -137,7 +139,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
             self._wantsKey = bool(wantsKey)
         return self._wantsKey
 
-    def withoutBlockInCountry(self, line, i):
+    def withoutBlockInCountry(self, lines, i):
         """This request was for bridges not blocked in **country**.
 
         Add any country code found in the **line** to the list of
