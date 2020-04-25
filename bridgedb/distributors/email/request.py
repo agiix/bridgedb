@@ -98,12 +98,12 @@ def determineBridgeRequestOptions(lines):
             request.withIPv6()
         elif line == "transport":
             if i < len(lines):
-                skipindex = i+request.withPluggableTransportType(lines,i)+1
+                skipindex = i+request.withPluggableTransportType(lines,i+1)+1
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif line == "unblocked":
             if i < len(lines):
-                skipindex = i+request.withoutBlockInCountry(lines,i)+1
+                skipindex = i+request.withoutBlockInCountry(lines,i+1)+1
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
         else:
