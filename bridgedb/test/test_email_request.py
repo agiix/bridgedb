@@ -147,12 +147,11 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
 
     #def test_determineBridgeRequestOptions_multiline_valid(self):
         """Though requests with a 'get' are considered valid."""
-        """Not defined yet
         lines = mail.copy()
         lines[73] = ''
         lines.insert(74,'transport obfs3')
-        lines.insert(75,'vanilla bridges'')
-        lines.insert(76,'transport scramblesuit unblocked ca)
+        lines.insert(75,'vanilla')
+        lines.insert(76,'transport scramblesuit unblocked ca')
         reqvest = request.determineBridgeRequestOptions(lines)
         # It's valid because it included a 'get'.
         self.assertEqual(reqvest.isValid(), True)
@@ -162,20 +161,20 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         # And they requested two transports.
         self.assertEqual(len(reqvest.transports), 2)
         self.assertEqual(reqvest.transports[0], 'obfs3')
-        self.assertEqual(reqvest.transports[1], 'scramblesuit')
+        self.assertEqual(reqvest.transports[2], 'scramblesuit')
         # And they wanted this stuff to not be blocked in Canada.
         self.assertEqual(len(reqvest.notBlockedIn), 1)
-        self.assertEqual(reqvest.notBlockedIn[0], 'ca')"""
+        self.assertEqual(reqvest.notBlockedIn[0], 'ca')
 
     #def test_determineBridgeRequestOptions_multiline_valid_OMG_CAPSLOCK(self):
         """Though requests with a 'get' are considered valid, even if they
         appear to not know the difference between Capslock and Shift.
         """
-        """Not defined yet
-        lines = ['',
-                 'get TRANSPORT obfs3',
-                 'vanilla bridges',
-                 'TRANSPORT SCRAMBLESUIT UNBLOCKED CA']
+        lines = mail.copy()
+        lines[73] = ''
+        lines.insert(74,'get TRANSPORT obfs3')
+        lines.insert(75,'vanilla')
+        lines.insert(76,'TRANSPORT SCRAMBLESUIT UNBLOCKED CA')
         reqvest = request.determineBridgeRequestOptions(lines)
         # It's valid because it included a 'get'.
         self.assertEqual(reqvest.isValid(), True)
@@ -185,10 +184,10 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         # And they requested two transports.
         self.assertEqual(len(reqvest.transports), 2)
         self.assertEqual(reqvest.transports[0], 'obfs3')
-        self.assertEqual(reqvest.transports[1], 'scramblesuit')
+        self.assertEqual(reqvest.transports[2], 'scramblesuit')
         # And they wanted this stuff to not be blocked in Canada.
         self.assertEqual(len(reqvest.notBlockedIn), 1)
-        self.assertEqual(reqvest.notBlockedIn[0], 'ca')"""
+        self.assertEqual(reqvest.notBlockedIn[0], 'ca')
 
     def test_determineBridgeRequestOptions_get_transport(self):
         """An invalid request for 'transport obfs3' (missing the 'get')."""
@@ -302,11 +301,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple unblocked countries which are all on the same
         'get unblocked' line will use only the *first* country code.
         """
-        """Not possible with the current parsing method, since it will only check for one country code
-        after the keyword unblocked
-        self.request.withoutBlockInCountry('get unblocked cn ir li')
+        self.request.withoutBlockInCountry('cn ir li',0)
         self.assertIsInstance(self.request.notBlockedIn, list)
-        self.assertEqual(len(self.request.notBlockedIn), 1)"""
+        self.assertEqual(len(self.request.notBlockedIn), 3)
 
     #def test_EmailBridgeRequest_withPluggableTransportType_SCRAMBLESUIT(self):
         """Transports which aren't in lowercase should be ignored."""
@@ -343,13 +340,11 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     #def test_EmailBridgeRequest_withPluggableTransportType_singleline_obfs3_obfs2_scramblesuit(self):
         """Requests for multiple transports which are all on the same
-        'get transport' line will use only the *first* transport.
+        'get transport' line add all valid transport.
         """
-        """Not possible with the current parsing method, since it will only check for one transport protocol
-        after the keyword transport
-        self.request.withPluggableTransportType('get transport obfs3 obfs2 scramblesuit')
+        self.request.withPluggableTransportType('obfs3 obfs2 scramblesuit',0)
         self.assertIsInstance(self.request.transports, list)
-        self.assertEqual(len(self.request.transports), 1)
+        self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')"""
 
     def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
