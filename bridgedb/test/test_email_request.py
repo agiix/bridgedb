@@ -159,7 +159,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         # Though they didn't request IPv6, so it should default to IPv4.
         self.assertIs(reqvest.ipVersion, 4)
         # And they requested two transports.
-        self.assertEqual(len(reqvest.transports), 2)
+        self.assertEqual(len(reqvest.transports), 3)
         self.assertEqual(reqvest.transports[0], 'obfs3')
         self.assertEqual(reqvest.transports[2], 'scramblesuit')
         # And they wanted this stuff to not be blocked in Canada.
