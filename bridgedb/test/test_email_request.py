@@ -153,8 +153,8 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(75,'vanilla')
         lines.insert(76,'transport scramblesuit unblocked ca')
         reqvest = request.determineBridgeRequestOptions(lines)
-        # It's valid because it included a 'get'.
-        self.assertEqual(reqvest.isValid(), True)
+        # It's not valid because it does not include a 'get'.
+        self.assertEqual(reqvest.isValid(), False)
         self.assertFalse(reqvest.wantsKey())
         # Though they didn't request IPv6, so it should default to IPv4.
         self.assertIs(reqvest.ipVersion, 4)
@@ -300,14 +300,16 @@ class EmailBridgeRequestTests(unittest.TestCase):
     #def test_EmailBridgeRequest_withoutBlockInCountry_singleline_cn_ir_li(self):
         """Requests for multiple unblocked countries which are all on the same
         'get unblocked' line will use only the *first* country code.
-        """
+        Same as above
+
         self.request.withoutBlockInCountry('cn ir li',0)
         self.assertIsInstance(self.request.notBlockedIn, list)
-        self.assertEqual(len(self.request.notBlockedIn), 3)
+        self.assertEqual(len(self.request.notBlockedIn), 3)"""
 
     #def test_EmailBridgeRequest_withPluggableTransportType_SCRAMBLESUIT(self):
         """Transports which aren't in lowercase should be ignored."""
-        """Uppercase protocols will currently not be ignored
+        """Cant happen since ever word is being transformed into lowercase
+        before parsing
         self.request.withPluggableTransportType('SCRAMBLESUIT')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 0)"""
@@ -342,10 +344,11 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple transports which are all on the same
         'get transport' line add all valid transport.
         """
+        """Same as above
         self.request.withPluggableTransportType('obfs3 obfs2 scramblesuit',0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
-        self.assertEqual(self.request.transports[0], 'obfs3')
+        self.assertEqual(self.request.transports[0], 'obfs3')"""
 
     def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
         """Requests for whacky transports that don't should not be appended."""
