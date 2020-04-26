@@ -345,7 +345,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.request.withPluggableTransportType('obfs3 obfs2 scramblesuit',0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
-        self.assertEqual(self.request.transports[0], 'obfs3')"""
+        self.assertEqual(self.request.transports[0], 'obfs3')
 
     def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
         """Requests for whacky transports that don't should not be appended."""
