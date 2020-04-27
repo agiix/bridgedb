@@ -58,7 +58,7 @@ def determineBridgeRequestOptions(lines):
         blocked in a specific CC (``'unblocked CC'``), then the ``TYPE``
         and/or ``CC`` will *always* be stored as a *lowercase* string.
 
-    :param list lines: A list of lines from an email, including the headers.
+    :param list lines: A list of lines from an email, excluding the headers.
     :raises EmailRequestedHelp: if the client requested help.
     :raises EmailRequestedKey: if the client requested our GnuPG key.
     :rtype: :class:`EmailBridgeRequest`
@@ -68,8 +68,15 @@ def determineBridgeRequestOptions(lines):
     """
     request = EmailBridgeRequest()
     msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
+    """If the parsing with get_payload() was succesfull, it will return a list 
+    which can be parsed further to extract the payload only"""
     if type(msg.get_payload()) is list:
         lines = msg.get_payload(0).get_payload().split()
+    """If the parsing with get_payload() was not succesfull, it will return
+    the entire message as a string. This might happen in some testcases that
+    do not generate a valid email to parse. In this case it will check for 
+    the Subject header and look for the string 'testing' and continue parsing
+    from there on."""
     else:
         payload = msg.get_payload().split()
         testing = False
@@ -146,8 +153,9 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         ``notBlockedIn``. Currently, a request for a transport is recognized
         if the email line contains the ``'unblocked'`` command.
 
-        :param str country: The line from the email wherein the client
-            requested some type of Pluggable Transport.
+        :param list lines: A list of lines (in this case words) from an email
+        :param int i: Index on where to continue parsing the lines list to 
+        obtain the country codes
         """
         countrymatch = False
         skipindex = 0
@@ -171,8 +179,9 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         list of ``transports``. Currently, a request for a transport is
         recognized if the email line contains the ``'transport'`` command.
 
-        :param str line: The line from the email wherein the client
-            requested some type of Pluggable Transport.
+        :param list lines: A list of lines (in this case words) from an email
+        :param int i: Index on where to continue parsing the lines list to 
+        obtain the requested transport protocol.
         """
         transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
         protocolmatch = False
