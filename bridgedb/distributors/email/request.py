@@ -69,14 +69,14 @@ def determineBridgeRequestOptions(lines):
     request = EmailBridgeRequest()
     msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
     """If the parsing with get_payload() was succesfull, it will return a list 
-    which can be parsed further to extract the payload only"""
-    if type(msg.get_payload()) is list:
-        lines = msg.get_payload(0).get_payload().split()
-    """If the parsing with get_payload() was not succesfull, it will return
+    which can be parsed further to extract the payload only
+    If the parsing with get_payload() was not succesfull, it will return
     the entire message as a string. This might happen in some testcases that
     do not generate a valid email to parse. In this case it will check for 
     the Subject header and look for the string 'testing' and continue parsing
     from there on."""
+    if type(msg.get_payload()) is list:
+        lines = msg.get_payload(0).get_payload().split()
     else:
         payload = msg.get_payload().split()
         testing = False
