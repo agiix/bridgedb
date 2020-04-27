@@ -342,9 +342,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     #def test_EmailBridgeRequest_withPluggableTransportType_singleline_obfs3_obfs2_scramblesuit(self):
         """Requests for multiple transports which are all on the same
-        'get transport' line add all valid transport.
-        """
-        """Same as above
+        'get transport' line add all valid transport. Same as above.
         self.request.withPluggableTransportType('obfs3 obfs2 scramblesuit',0)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)

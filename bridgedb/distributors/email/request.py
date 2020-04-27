@@ -178,6 +178,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         protocolmatch = False
         skipindex = 0
         for protocol in lines[i:]:
+            protocol = protocol.strip().lower()
             if protocol in transport_protocols:
                 self.transports.append(protocol)
                 protocolmatch = True
