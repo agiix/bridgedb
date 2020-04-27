@@ -187,7 +187,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         self.assertEqual(reqvest.transports[2], 'scramblesuit')
         # And they wanted this stuff to not be blocked in Canada.
         self.assertEqual(len(reqvest.notBlockedIn), 1)
-        self.assertEqual(reqvest.notBlockedIn[0], 'ca')
+        self.assertEqual(reqvest.notBlockedIn[0], 'CA')
 
     def test_determineBridgeRequestOptions_get_transport(self):
         """An invalid request for 'transport obfs3' (missing the 'get')."""
