@@ -63,6 +63,14 @@ class EmailRequestedKey(Exception):
     """Raised when an incoming email requested a copy of our GnuPG keys."""
 
 
+class EmailNoTransportSpecified(Exception):
+    """Raised when an incoming email requested a transport without specifying the protocol."""
+
+
+class EmailNoCountryCode(Exception):
+    """Raised when an incoming email requested unblocked bridges but did not specify a country code"""
+
+
 class EmailDistributor(Distributor):
     """Object that hands out bridges based on the email address of an incoming
     request and the current time period.
