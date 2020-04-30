@@ -104,7 +104,7 @@ def determineBridgeRequestOptions(lines):
             if i < len(words): 
                 skipindex = i                       
                 protocolmatch = False
-                for protocol in words[i:]:
+                for protocol in words[i+1:]:
                     protocol = protocol.strip().lower()
                     if protocol in transport_protocols:
                         request.withPluggableTransportType(protocol)
@@ -120,7 +120,7 @@ def determineBridgeRequestOptions(lines):
             if i < len(words):
                 skipindex = i
                 countrymatch = False
-                for country in words[i:]:
+                for country in words[i+1:]:
                     if len(country) == 2:
                         request.withoutBlockInCountry(country)   
                         countrymatch = True
