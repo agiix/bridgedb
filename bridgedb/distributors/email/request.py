@@ -67,7 +67,6 @@ def determineBridgeRequestOptions(lines):
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """
     request = EmailBridgeRequest()
-    msg = email.message_from_string('\n'.join(lines),policy=policy.compat32)
     """If the parsing with get_payload() was succesfull, it will return a list 
     which can be parsed further to extract the payload only
     If the parsing with get_payload() was not succesfull, it will return
@@ -75,10 +74,10 @@ def determineBridgeRequestOptions(lines):
     do not generate a valid email to parse. In this case it will check for 
     the Subject header and look for the string 'testing' and continue parsing
     from there on."""
-    if type(msg.get_payload()) is list:
-        lines = msg.get_payload(0).get_payload().split()
+    if type(lines.get_payload()) is list:
+        words = lines.get_payload(0).get_payload().split()
     else:
-        payload = msg.get_payload().split()
+        payload = lines.get_payload().split()
         testing = False
         newlines = []
         for line in payload:
@@ -86,31 +85,31 @@ def determineBridgeRequestOptions(lines):
                 newlines.append(line)
             if "testing" in line.strip().lower():
                 testing = True
-        lines = newlines
+        words = newlines
 
     skipindex = 0
-    for i, line in enumerate(lines):
+    for i, word in enumerate(words):
         if i < skipindex:
             continue
-        line = line.strip().lower()
+        word = word.strip().lower()
 
-        if line == "get":
+        if word == "get":
             request.isValid(True) 
-        elif line == "help" or line == "halp":
+        elif word == "help" or word == "halp":
             raise EmailRequestedHelp("Client requested help.")         
-        elif line == "key":
+        elif word == "key":
             request.wantsKey(True)
             raise EmailRequestedKey("Email requested a copy of our GnuPG key.")
-        elif line == "ipv6":
+        elif word == "ipv6":
             request.withIPv6()
-        elif line == "transport":
-            if i < len(lines):
-                skipindex = i+request.withPluggableTransportType(lines,i+1)+1
+        elif word == "transport":
+            if i < len(words):
+                skipindex = i+request.withPluggableTransportType(words,i+1)+1
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif line == "unblocked":
-            if i < len(lines):
-                skipindex = i+request.withoutBlockInCountry(lines,i+1)+1
+            if i < len(words):
+                skipindex = i+request.withoutBlockInCountry(words,i+1)+1
             else:
                 raise EmailNoCountryCode("Email did not specify a country code.")
         else:
@@ -146,20 +145,20 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
             self._wantsKey = bool(wantsKey)
         return self._wantsKey
 
-    def withoutBlockInCountry(self, lines, i):
+    def withoutBlockInCountry(self, words, i):
         """This request was for bridges not blocked in **country**.
 
         Add any country code found in the **line** to the list of
         ``notBlockedIn``. Currently, a request for a transport is recognized
         if the email line contains the ``'unblocked'`` command.
 
-        :param list lines: A list of lines (in this case words) from an email
-        :param int i: Index on where to continue parsing the lines list to 
+        :param list words: A list of words from an email
+        :param int i: Index on where to continue parsing the words list to 
         obtain the country codes
         """
         countrymatch = False
         skipindex = 0
-        for country in lines[i:]:
+        for country in words[i:]:
             if len(country) == 2:
                 self.notBlockedIn.append(country)
                 logging.info("Email requested bridges not blocked in: %r"
@@ -172,21 +171,21 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
                 break             
         return skipindex
 
-    def withPluggableTransportType(self, lines, i):
+    def withPluggableTransportType(self, words, i):
         """This request included a specific Pluggable Transport identifier.
 
         Add any Pluggable Transport method TYPE found in the **line** to the
         list of ``transports``. Currently, a request for a transport is
         recognized if the email line contains the ``'transport'`` command.
 
-        :param list lines: A list of lines (in this case words) from an email
-        :param int i: Index on where to continue parsing the lines list to 
+        :param list words: A list of words (in this case words) from an email
+        :param int i: Index on where to continue parsing the words list to 
         obtain the requested transport protocol.
         """
         transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
         protocolmatch = False
         skipindex = 0
-        for protocol in lines[i:]:
+        for protocol in words[i:]:
             protocol = protocol.strip().lower()
             if protocol in transport_protocols:
                 self.transports.append(protocol)
