@@ -31,6 +31,9 @@ from bridgedb.test.email_helpers import _createConfig
 from bridgedb.test.email_helpers import _createMailServerContext
 from bridgedb.test.email_helpers import DummyEmailDistributorWithState
 
+import email
+from email import policy
+
 mail = ['Delivered-To: bridges@tortest.org',
 'Received: by 2002:a05:6602:13d4:0:0:0:0 with SMTP id o20csp2120992iov;',
 '        Sat, 18 Apr 2020 10:46:14 -0700 (PDT)',
@@ -142,7 +145,7 @@ class CreateResponseBodyTests(unittest.TestCase):
         lines[67] = 'To: bridges@localhost'
         lines[66] = 'Subject: testing'
         lines[73] = 'get bridges'
-        return lines
+        return email.message_from_string('\n'.join(lines),policy=policy.compat32)
 
     def test_createResponseBody_getKey(self):
         """A request for 'get key' should receive our GPG key."""
