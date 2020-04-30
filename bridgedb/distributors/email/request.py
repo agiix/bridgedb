@@ -74,7 +74,7 @@ def determineBridgeRequestOptions(lines):
     do not generate a valid email to parse. In this case it will check for 
     the Subject header and look for the string 'testing' and continue parsing
     from there on."""
-    isinstance(lines.get_payload(), list):
+    if isinstance(lines.get_payload(), list):
         words = lines.get_payload(0).get_payload().split()
     else:
         payload = lines.get_payload().split()
