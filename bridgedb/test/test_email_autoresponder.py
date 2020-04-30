@@ -137,7 +137,7 @@ class CreateResponseBodyTests(unittest.TestCase):
         self.ctx = _createMailServerContext(self.config)
         self.distributor = self.ctx.distributor
 
-    def _getIncomingLines(self, clientAddress="user@example.com"),line=None:
+    def _getIncomingLines(self, clientAddress="user@example.com",line=None):
         """Generate the lines of an incoming email from **clientAddress**."""
         self.toAddress = Address(clientAddress)
         lines = mail.copy()
