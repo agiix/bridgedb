@@ -147,14 +147,6 @@ class CreateResponseBodyTests(unittest.TestCase):
         lines[73] = 'get bridges'
         return email.message_from_string('\n'.join(lines),policy=policy.compat32)
 
-    def _getIncomingLinesInsertLines(self, clientAddress="user@example.com",lines):
-        """Generate the lines of an incoming email from **clientAddress**."""
-        self.toAddress = Address(clientAddress)
-        lines[63] = 'From: %s' % clientAddress
-        lines[67] = 'To: bridges@localhost'
-        lines[66] = 'Subject: testing'
-        return email.message_from_string('\n'.join(lines),policy=policy.compat32)
-
     def test_createResponseBody_getKey(self):
         """A request for 'get key' should receive our GPG key."""
         lines = self._getIncomingLines()
@@ -178,7 +170,9 @@ class CreateResponseBodyTests(unittest.TestCase):
         self.assertSubstring("obfs3", ret)
 
     def test_createResponseBody_bridges_obfsobfsbz(self):
-        """We should only pay attention to the *last* in a crazy request."""
+        """We should only pay attention to the *last* in a crazy request.
+        Commented out this test case for now, Needs to be adjusted"""
+
         lines = mail.copy
         lines[73] = 'get unblocked bz'
         lines.insert(74,'get transport obfs2')
