@@ -243,15 +243,13 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn(self):
         """Lowercased country codes are okay though."""
-        countries = ['cn']
-        self.request.withoutBlockInCountry(countries)
+        self.request.withoutBlockInCountry('cn')
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn_getMissing(self):
         """Lowercased country codes are still okay if the 'get' is missing."""
-        countries = ['cn']
-        self.request.withoutBlockInCountry(countries)
+        self.request.withoutBlockInCountry('cn')
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
@@ -259,8 +257,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple unblocked countries should compound if they
         are on separate 'get unblocked' lines.
         """
-        countries = ['cn','ir','li']
-        self.request.withoutBlockInCountry(countries)        
+        self.request.withoutBlockInCountry('cn')     
+        self.request.withoutBlockInCountry('ir')     
+        self.request.withoutBlockInCountry('li')        
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 3)
 
@@ -283,16 +282,14 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit(self):
         """Lowercased transports are okay though."""
-        protocols = ['scramblesuit']
-        self.request.withPluggableTransportType(protocols)
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
 
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit_getMissing(self):
         """Lowercased transports are still okay if 'get' is missing."""
-        protocols = ['scramblesuit']
-        self.request.withPluggableTransportType(protocols)
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
@@ -301,7 +298,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple pluggable transports should compound if they
         are on separate 'get transport' lines.
         """
-        protocols = ['obfs3','obfs2','scramblesuit']
+        self.request.withPluggableTransportType('obfs3')
+        self.request.withPluggableTransportType('obfs2')
+        self.request.withPluggableTransportType('scramblesuit')
         self.request.withPluggableTransportType(protocols)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
@@ -317,9 +316,8 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
         """Requests for whacky transports that don't should not be appended."""
-        protocols = ['whack']
         self.assertRaises(request.EmailNoTransportSpecified,
-                          self.request.withPluggableTransportType, protocols)
+                          self.request.withPluggableTransportType, 'whack')
 
 
     def test_EmailBridgeRequest_justOnePTType_obfs3_obfs2_scramblesuit(self):
@@ -327,8 +325,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         ``EmailBridgeRequest.justOneTransport()`` is used will use only the
         *last* transport.
         """
-        protocols = ['obfs3','obfs2','scramblesuit']
-        self.request.withPluggableTransportType(protocols)
+        self.request.withPluggableTransportType('obfs3')
+        self.request.withPluggableTransportType('obfs2')
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')
