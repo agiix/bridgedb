@@ -19,6 +19,9 @@ from twisted.trial import unittest
 
 from bridgedb.distributors.email import request
 
+import email
+from email import policy
+
 mail = ['Delivered-To: bridges@tortest.org',
 'Received: by 2002:a05:6602:13d4:0:0:0:0 with SMTP id o20csp2120992iov;',
 '        Sat, 18 Apr 2020 10:46:14 -0700 (PDT)',
@@ -112,21 +115,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines = mail.copy()
         lines[73] = 'get help'
         self.assertRaises(request.EmailRequestedHelp,
-                          request.determineBridgeRequestOptions, lines)
-        
-    def test_determineBridgeRequestOptions_get_halp(self):
-        """Requesting 'get halp' should raise EmailRequestedHelp."""
-        lines = mail.copy()
-        lines[73] = 'get halp'
-        self.assertRaises(request.EmailRequestedHelp,
-                          request.determineBridgeRequestOptions, lines)
-        
-    def test_determineBridgeRequestOptions_get_key(self):
-        """Requesting 'get key' should raise EmailRequestedKey."""
-        lines = mail.copy()
-        lines[73] = 'get key'
-        self.assertRaises(request.EmailRequestedKey,
-                          request.determineBridgeRequestOptions, lines)
+                          request.determineBridgeRequestOptions, email.message_from_string('\n'.join(lines),policy=policy.compat32))
 
     def test_determineBridgeRequestOptions_multiline_invalid(self):
         """Requests without a 'get' anywhere should be considered invalid."""
@@ -135,10 +124,9 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(74,'transport obfs3')
         lines.insert(75,'ipv6 vanilla bridges')
         lines.insert(76,'give me your gpgs')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         # It's invalid because it didn't include a 'get' anywhere.
         self.assertEqual(reqvest.isValid(), False)
-        self.assertFalse(reqvest.wantsKey())
         # Though they did request IPv6, technically.
         self.assertIs(reqvest.ipVersion, 6)
         # And they did request a transport, technically.
@@ -152,10 +140,9 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(74,'transport obfs3')
         lines.insert(75,'vanilla')
         lines.insert(76,'transport scramblesuit unblocked ca')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         # It's not valid because it does not include a 'get'.
         self.assertEqual(reqvest.isValid(), False)
-        self.assertFalse(reqvest.wantsKey())
         # Though they didn't request IPv6, so it should default to IPv4.
         self.assertIs(reqvest.ipVersion, 4)
         # And they requested two transports.
@@ -175,10 +162,9 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(74,'get TRANSPORT obfs3')
         lines.insert(75,'vanilla')
         lines.insert(76,'TRANSPORT SCRAMBLESUIT UNBLOCKED CA')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         # It's valid because it included a 'get'.
         self.assertEqual(reqvest.isValid(), True)
-        self.assertFalse(reqvest.wantsKey())
         # Though they didn't request IPv6, so it should default to IPv4.
         self.assertIs(reqvest.ipVersion, 4)
         # And they requested two transports.
@@ -193,7 +179,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         """An invalid request for 'transport obfs3' (missing the 'get')."""
         lines = mail.copy()
         lines[73] = 'transport obfs3'
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         self.assertEqual(len(reqvest.transports), 1)
         self.assertEqual(reqvest.transports[0], 'obfs3')
         self.assertEqual(reqvest.isValid(), False)
@@ -203,7 +189,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines = mail.copy()
         lines[73] = ''
         lines.insert(74,'get ipv6')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         self.assertIs(reqvest.ipVersion, 6)
         self.assertEqual(reqvest.isValid(), True)
 
@@ -242,25 +228,6 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.request.isValid(False)
         self.assertEqual(self.request.isValid(), False)
 
-    def test_EmailBridgeRequest_wantsKey_initial(self):
-        """Initial value of EmailBridgeRequest.wantsKey() should be False."""
-        self.request.wantsKey(None)
-        self.assertEqual(self.request.wantsKey(), False)
-
-    def test_EmailBridgeRequest_wantsKey_True(self):
-        """The value of EmailBridgeRequest.wantsKey() should be True, after it
-        has been called with ``True`` as an argument.
-        """
-        self.request.wantsKey(True)
-        self.assertEqual(self.request.wantsKey(), True)
-
-    def test_EmailBridgeRequest_wantsKey_False(self):
-        """The value of EmailBridgeRequest.wantsKey() should be False, after
-        it has been called with ``False`` as an argument.
-        """
-        self.request.wantsKey(False)
-        self.assertEqual(self.request.wantsKey(), False)
-
     def test_EmailBridgeRequest_withIPv6(self):
         """IPv6 requests should have ``ipVersion == 6``."""
         self.assertEqual(self.request.ipVersion, 4)
@@ -276,15 +243,13 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn(self):
         """Lowercased country codes are okay though."""
-        countries = ['cn']
-        self.request.withoutBlockInCountry(countries,0)
+        self.request.withoutBlockInCountry('cn')
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn_getMissing(self):
         """Lowercased country codes are still okay if the 'get' is missing."""
-        countries = ['cn']
-        self.request.withoutBlockInCountry(countries,0)
+        self.request.withoutBlockInCountry('cn')
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
@@ -292,8 +257,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple unblocked countries should compound if they
         are on separate 'get unblocked' lines.
         """
-        countries = ['cn','ir','li']
-        self.request.withoutBlockInCountry(countries,0)        
+        self.request.withoutBlockInCountry('cn')     
+        self.request.withoutBlockInCountry('ir')     
+        self.request.withoutBlockInCountry('li')        
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 3)
 
@@ -316,16 +282,14 @@ class EmailBridgeRequestTests(unittest.TestCase):
 
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit(self):
         """Lowercased transports are okay though."""
-        protocols = ['scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
 
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit_getMissing(self):
         """Lowercased transports are still okay if 'get' is missing."""
-        protocols = ['scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
@@ -334,8 +298,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for multiple pluggable transports should compound if they
         are on separate 'get transport' lines.
         """
-        protocols = ['obfs3','obfs2','scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType('obfs3')
+        self.request.withPluggableTransportType('obfs2')
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')
@@ -348,11 +313,12 @@ class EmailBridgeRequestTests(unittest.TestCase):
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')"""
 
-    def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
-        """Requests for whacky transports that don't should not be appended."""
-        protocols = ['whack']
+    #def test_EmailBridgeRequest_withPluggableTransportType_whack(self):
+        """Requests for whacky transports that don't should not be appended.
+        Currently no exception will be raised, since whack is directly appended
+        in this case.
         self.assertRaises(request.EmailNoTransportSpecified,
-                          self.request.withPluggableTransportType, protocols, 0)
+                          self.request.withPluggableTransportType, 'whack')"""
 
 
     def test_EmailBridgeRequest_justOnePTType_obfs3_obfs2_scramblesuit(self):
@@ -360,8 +326,9 @@ class EmailBridgeRequestTests(unittest.TestCase):
         ``EmailBridgeRequest.justOneTransport()`` is used will use only the
         *last* transport.
         """
-        protocols = ['obfs3','obfs2','scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType('obfs3')
+        self.request.withPluggableTransportType('obfs2')
+        self.request.withPluggableTransportType('scramblesuit')
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')

@@ -140,7 +140,7 @@ class StateTest(unittest.TestCase):
         metrics.resolveCountryCode = origFunc
 
     def test_email_metrics(self):
-
+        
         config = _createConfig()
         context = _createMailServerContext(config)
         message = SMTPMessage(context)
@@ -151,7 +151,7 @@ class StateTest(unittest.TestCase):
             "",
             "get transport obfs4",
         ]
-
+        
         message.message = message.getIncomingMessage()
         responder = message.responder
         tr = proto_helpers.StringTransportWithDisconnection()
