@@ -244,14 +244,14 @@ class EmailBridgeRequestTests(unittest.TestCase):
     def test_EmailBridgeRequest_withoutBlockInCountry_cn(self):
         """Lowercased country codes are okay though."""
         countries = ['cn']
-        self.request.withoutBlockInCountry(countries,0)
+        self.request.withoutBlockInCountry(countries)
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
     def test_EmailBridgeRequest_withoutBlockInCountry_cn_getMissing(self):
         """Lowercased country codes are still okay if the 'get' is missing."""
         countries = ['cn']
-        self.request.withoutBlockInCountry(countries,0)
+        self.request.withoutBlockInCountry(countries)
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 1)
 
@@ -260,7 +260,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         are on separate 'get unblocked' lines.
         """
         countries = ['cn','ir','li']
-        self.request.withoutBlockInCountry(countries,0)        
+        self.request.withoutBlockInCountry(countries)        
         self.assertIsInstance(self.request.notBlockedIn, list)
         self.assertEqual(len(self.request.notBlockedIn), 3)
 
@@ -284,7 +284,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit(self):
         """Lowercased transports are okay though."""
         protocols = ['scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType(protocols)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
@@ -292,7 +292,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
     def test_EmailBridgeRequest_withPluggableTransportType_scramblesuit_getMissing(self):
         """Lowercased transports are still okay if 'get' is missing."""
         protocols = ['scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType(protocols)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 1)
         self.assertEqual(self.request.transports[0], 'scramblesuit')
@@ -302,7 +302,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         are on separate 'get transport' lines.
         """
         protocols = ['obfs3','obfs2','scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType(protocols)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')
@@ -319,7 +319,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         """Requests for whacky transports that don't should not be appended."""
         protocols = ['whack']
         self.assertRaises(request.EmailNoTransportSpecified,
-                          self.request.withPluggableTransportType, protocols, 0)
+                          self.request.withPluggableTransportType, protocols)
 
 
     def test_EmailBridgeRequest_justOnePTType_obfs3_obfs2_scramblesuit(self):
@@ -328,7 +328,7 @@ class EmailBridgeRequestTests(unittest.TestCase):
         *last* transport.
         """
         protocols = ['obfs3','obfs2','scramblesuit']
-        self.request.withPluggableTransportType(protocols,0)
+        self.request.withPluggableTransportType(protocols)
         self.assertIsInstance(self.request.transports, list)
         self.assertEqual(len(self.request.transports), 3)
         self.assertEqual(self.request.transports[0], 'obfs3')
