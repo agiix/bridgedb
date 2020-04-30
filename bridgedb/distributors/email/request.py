@@ -107,7 +107,7 @@ def determineBridgeRequestOptions(lines):
                 skipindex = i+request.withPluggableTransportType(words,i+1)+1
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
-        elif line == "unblocked":
+        elif word == "unblocked":
             if i < len(words):
                 skipindex = i+request.withoutBlockInCountry(words,i+1)+1
             else:
