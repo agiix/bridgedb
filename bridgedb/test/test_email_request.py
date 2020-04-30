@@ -19,6 +19,9 @@ from twisted.trial import unittest
 
 from bridgedb.distributors.email import request
 
+import email
+from email import policy
+
 mail = ['Delivered-To: bridges@tortest.org',
 'Received: by 2002:a05:6602:13d4:0:0:0:0 with SMTP id o20csp2120992iov;',
 '        Sat, 18 Apr 2020 10:46:14 -0700 (PDT)',
@@ -112,21 +115,21 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines = mail.copy()
         lines[73] = 'get help'
         self.assertRaises(request.EmailRequestedHelp,
-                          request.determineBridgeRequestOptions, lines)
+                          request.determineBridgeRequestOptions, email.message_from_string('\n'.join(lines),policy=policy.compat32))
         
     def test_determineBridgeRequestOptions_get_halp(self):
         """Requesting 'get halp' should raise EmailRequestedHelp."""
         lines = mail.copy()
         lines[73] = 'get halp'
         self.assertRaises(request.EmailRequestedHelp,
-                          request.determineBridgeRequestOptions, lines)
+                          request.determineBridgeRequestOptions, email.message_from_string('\n'.join(lines),policy=policy.compat32))
         
     def test_determineBridgeRequestOptions_get_key(self):
         """Requesting 'get key' should raise EmailRequestedKey."""
         lines = mail.copy()
         lines[73] = 'get key'
         self.assertRaises(request.EmailRequestedKey,
-                          request.determineBridgeRequestOptions, lines)
+                          request.determineBridgeRequestOptions, email.message_from_string('\n'.join(lines),policy=policy.compat32))
 
     def test_determineBridgeRequestOptions_multiline_invalid(self):
         """Requests without a 'get' anywhere should be considered invalid."""
@@ -135,7 +138,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(74,'transport obfs3')
         lines.insert(75,'ipv6 vanilla bridges')
         lines.insert(76,'give me your gpgs')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         # It's invalid because it didn't include a 'get' anywhere.
         self.assertEqual(reqvest.isValid(), False)
         self.assertFalse(reqvest.wantsKey())
@@ -152,7 +155,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(74,'transport obfs3')
         lines.insert(75,'vanilla')
         lines.insert(76,'transport scramblesuit unblocked ca')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         # It's not valid because it does not include a 'get'.
         self.assertEqual(reqvest.isValid(), False)
         self.assertFalse(reqvest.wantsKey())
@@ -175,7 +178,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines.insert(74,'get TRANSPORT obfs3')
         lines.insert(75,'vanilla')
         lines.insert(76,'TRANSPORT SCRAMBLESUIT UNBLOCKED CA')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         # It's valid because it included a 'get'.
         self.assertEqual(reqvest.isValid(), True)
         self.assertFalse(reqvest.wantsKey())
@@ -193,7 +196,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         """An invalid request for 'transport obfs3' (missing the 'get')."""
         lines = mail.copy()
         lines[73] = 'transport obfs3'
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         self.assertEqual(len(reqvest.transports), 1)
         self.assertEqual(reqvest.transports[0], 'obfs3')
         self.assertEqual(reqvest.isValid(), False)
@@ -203,7 +206,7 @@ class DetermineBridgeRequestOptionsTests(unittest.TestCase):
         lines = mail.copy()
         lines[73] = ''
         lines.insert(74,'get ipv6')
-        reqvest = request.determineBridgeRequestOptions(lines)
+        reqvest = request.determineBridgeRequestOptions(email.message_from_string('\n'.join(lines),policy=policy.compat32))
         self.assertIs(reqvest.ipVersion, 6)
         self.assertEqual(reqvest.isValid(), True)
 
