@@ -67,13 +67,13 @@ def determineBridgeRequestOptions(lines):
         its filters generated via :meth:`~EmailBridgeRequest.generateFilters`.
     """
     request = EmailBridgeRequest()
-    """If the parsing with get_payload() was succesfull, it will return a list 
-    which can be parsed further to extract the payload only
-    If the parsing with get_payload() was not succesfull, it will return
-    the entire message as a string. This might happen in some testcases that
-    do not generate a valid email to parse. In this case it will check for 
-    the Subject header and look for the string 'testing' and continue parsing
-    from there on."""
+    #If the parsing with get_payload() was succesfull, it will return a list 
+    #which can be parsed further to extract the payload only
+    #If the parsing with get_payload() was not succesfull, it will return
+    #the entire message as a string. This might happen in some testcases that
+    #do not generate a valid email to parse. In this case it will check for 
+    #the Subject header and look for the string 'testing' and continue parsing
+    #from there on. 
     if isinstance(lines.get_payload(), list):
         words = lines.get_payload(0).get_payload().split()
     else:
@@ -95,23 +95,40 @@ def determineBridgeRequestOptions(lines):
 
         if word == "get":
             request.isValid(True) 
-        elif word == "help" or word == "halp":
+        elif word == "help":
             raise EmailRequestedHelp("Client requested help.")         
-        elif word == "key":
-            request.wantsKey(True)
-            raise EmailRequestedKey("Email requested a copy of our GnuPG key.")
         elif word == "ipv6":
             request.withIPv6()
         elif word == "transport":
-            if i < len(words):
-                skipindex = i+request.withPluggableTransportType(words,i+1)+1
+            transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
+            if i < len(words): 
+                skipindex = i                       
+                protocolmatch = False
+                for protocol in words[i:]:
+                    protocol = protocol.strip().lower()
+                    if protocol in transport_protocols:
+                        request.withPluggableTransportType(protocol)
+                        protocolmatch = True
+                        skipindex += 1
+                    else:
+                        if protocolmatch == False:
+                            raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
+                        break    
             else:
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif word == "unblocked":
             if i < len(words):
-                skipindex = i+request.withoutBlockInCountry(words,i+1)+1
-            else:
-                raise EmailNoCountryCode("Email did not specify a country code.")
+                skipindex = i
+                countrymatch = False
+                for country in words[i:]:
+                    if len(country) == 2:
+                        request.withoutBlockInCountry(country)   
+                        countrymatch = True
+                        skipindex += 1        
+                    else:
+                        if countrymatch == False:
+                            raise EmailNoCountryCode("Email does not specify a country code.")
+                        break 
         else:
             break
 
@@ -145,7 +162,7 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
             self._wantsKey = bool(wantsKey)
         return self._wantsKey
 
-    def withoutBlockInCountry(self, words, i):
+    def withoutBlockInCountry(self, country):
         """This request was for bridges not blocked in **country**.
 
         Add any country code found in the **line** to the list of
@@ -156,22 +173,10 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         :param int i: Index on where to continue parsing the words list to 
         obtain the country codes
         """
-        countrymatch = False
-        skipindex = 0
-        for country in words[i:]:
-            if len(country) == 2:
-                self.notBlockedIn.append(country)
-                logging.info("Email requested bridges not blocked in: %r"
-                             % country)            
-                countrymatch = True
-                skipindex += 1        
-            else:
-                if countrymatch == False:
-                    raise EmailNoCountryCode("Email did not specify a country code.")
-                break             
-        return skipindex
+        self.notBlockedIn.append(country)
+        logging.info("Email requested bridges not blocked in: %r" % country)            
 
-    def withPluggableTransportType(self, words, i):
+    def withPluggableTransportType(self, protocol):
         """This request included a specific Pluggable Transport identifier.
 
         Add any Pluggable Transport method TYPE found in the **line** to the
@@ -182,18 +187,5 @@ class EmailBridgeRequest(bridgerequest.BridgeRequestBase):
         :param int i: Index on where to continue parsing the words list to 
         obtain the requested transport protocol.
         """
-        transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
-        protocolmatch = False
-        skipindex = 0
-        for protocol in words[i:]:
-            protocol = protocol.strip().lower()
-            if protocol in transport_protocols:
-                self.transports.append(protocol)
-                protocolmatch = True
-                skipindex += 1
-                logging.info("Email requested transport type: %r" % protocol)
-            else:
-                if protocolmatch == False:
-                    raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
-                break    
-        return skipindex           
+        self.transports.append(protocol)
+        logging.info("Email requested transport type: %r" % protocol)      

@@ -149,7 +149,7 @@ class StateTest(unittest.TestCase):
             "To: bridges@torproject.org",
             "Subject: testing",
             "",
-            "get transport vanilla",
+            "get transport obfs4",
         ]
         
         message.message = message.getIncomingMessage()

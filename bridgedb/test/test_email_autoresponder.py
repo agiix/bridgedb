@@ -150,11 +150,11 @@ class CreateResponseBodyTests(unittest.TestCase):
             lines[73] = 'get bridges'
         return email.message_from_string('\n'.join(lines),policy=policy.compat32)
 
-    def test_createResponseBody_getKey(self):
-        """A request for 'get key' should receive our GPG key."""
+    #def test_createResponseBody_getKey(self):
+        """A request for 'get key' should receive our GPG key.
         lines = self._getIncomingLines("user@example.com","get key")
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
-        self.assertSubstring('-----BEGIN PGP PUBLIC KEY BLOCK-----', ret)
+        self.assertSubstring('-----BEGIN PGP PUBLIC KEY BLOCK-----', ret)"""
 
     def test_createResponseBody_bridges_invalid(self):
         """An invalid request for 'transport obfs3' should get help text."""
