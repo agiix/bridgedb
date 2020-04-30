@@ -137,34 +137,35 @@ class CreateResponseBodyTests(unittest.TestCase):
         self.ctx = _createMailServerContext(self.config)
         self.distributor = self.ctx.distributor
 
-    def _getIncomingLines(self, clientAddress="user@example.com"):
+    def _getIncomingLines(self, clientAddress="user@example.com"),line=None:
         """Generate the lines of an incoming email from **clientAddress**."""
         self.toAddress = Address(clientAddress)
         lines = mail.copy()
         lines[63] = 'From: %s' % clientAddress
         lines[67] = 'To: bridges@localhost'
         lines[66] = 'Subject: testing'
-        lines[73] = 'get bridges'
+        if line is not None:
+            lines[73] = line
+        else:
+            lines[73] = 'get bridges'
         return email.message_from_string('\n'.join(lines),policy=policy.compat32)
 
     def test_createResponseBody_getKey(self):
         """A request for 'get key' should receive our GPG key."""
-        lines = self._getIncomingLines()
-        lines[73] = 'get key'
+        lines = self._getIncomingLines("user@example.com","get key")
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring('-----BEGIN PGP PUBLIC KEY BLOCK-----', ret)
 
     def test_createResponseBody_bridges_invalid(self):
         """An invalid request for 'transport obfs3' should get help text."""
-        lines = self._getIncomingLines("testing@localhost")
+        lines = self._getIncomingLines("testing@localhost",'transport obfs3')
         lines[73] = 'transport obfs3'
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring("COMMANDs", ret)
 
     def test_createResponseBody_bridges_obfs3(self):
         """A request for 'get transport obfs3' should receive a response."""
-        lines = self._getIncomingLines("testing@localhost")
-        lines[73] = 'get transport obfs3'
+        lines = self._getIncomingLines("testing@localhost","get transport obfs3")
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring("Here are your bridges", ret)
         self.assertSubstring("obfs3", ret)
