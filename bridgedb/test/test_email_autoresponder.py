@@ -159,7 +159,6 @@ class CreateResponseBodyTests(unittest.TestCase):
     def test_createResponseBody_bridges_invalid(self):
         """An invalid request for 'transport obfs3' should get help text."""
         lines = self._getIncomingLines("testing@localhost",'transport obfs3')
-        lines[73] = 'transport obfs3'
         ret = autoresponder.createResponseBody(lines, self.ctx, self.toAddress)
         self.assertSubstring("COMMANDs", ret)
 
