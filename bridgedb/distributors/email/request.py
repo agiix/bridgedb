@@ -102,7 +102,7 @@ def determineBridgeRequestOptions(lines):
         elif word == "transport":
             transport_protocols = {"obfs2", "obfs3","obfs4","fte","scramblesuit","vanilla"}
             if i < len(words): 
-                skipindex = i                       
+                skipindex = i+1                       
                 protocolmatch = False
                 for protocol in words[i+1:]:
                     protocol = protocol.strip().lower()
@@ -118,7 +118,7 @@ def determineBridgeRequestOptions(lines):
                 raise EmailNoTransportSpecified("Email does not specify a transport protocol.")
         elif word == "unblocked":
             if i < len(words):
-                skipindex = i
+                skipindex = i+1
                 countrymatch = False
                 for country in words[i+1:]:
                     if len(country) == 2:
