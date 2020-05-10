@@ -50,6 +50,7 @@ Servers which interface with clients and distribute bridges over SMTP.
 from __future__ import unicode_literals
 
 import email.message
+from email import policy
 import logging
 import io
 import socket
@@ -252,7 +253,7 @@ class SMTPMessage(object):
         :returns: A ``Message`` comprised of all lines received thus far.
         """
 
-        return email.message_from_string('\n'.join(self.lines))
+        return email.message_from_string('\n'.join(self.lines),policy=policy.compat32)
 
 
 @implementer(smtp.IMessageDelivery)

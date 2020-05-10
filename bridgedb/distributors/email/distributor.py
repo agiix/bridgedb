@@ -55,12 +55,24 @@ class TooSoonEmail(addr.BadEmail):
     """Raised when we got a request from this address too recently."""
 
 
+class EmailPayloadNotParseable(Exception):
+    """Raised when get_payload() returns a string instead of a list."""
+
+
 class EmailRequestedHelp(Exception):
     """Raised when a client has emailed requesting help."""
 
 
 class EmailRequestedKey(Exception):
     """Raised when an incoming email requested a copy of our GnuPG keys."""
+
+
+class EmailNoTransportSpecified(Exception):
+    """Raised when an incoming email requested a transport without specifying the protocol."""
+
+
+class EmailNoCountryCode(Exception):
+    """Raised when an incoming email requested unblocked bridges but did not specify a country code"""
 
 
 class EmailDistributor(Distributor):
