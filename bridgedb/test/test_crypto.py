@@ -327,6 +327,36 @@ class SSLVerifyingContextFactoryTests(unittest.TestCase,
         "oCVrOPbDMPN4a2gSmK8Ur0aHuEpcNghg6HJsVSANokIIwQ/r4niqL5yotsangP/5\n"
         "rR97EIYKFz7C6LMy/PIe8xFTIyKMtM59IcpUDIwCLlM9JtNdwN4VpyKy\n"
         "-----END CERTIFICATE-----\n")
+    
+        _wildcardcertificate = (
+        "-----BEGIN CERTIFICATE-----\n"
+        "MIIExjCCA66gAwIBAgIRAKy0RV8bAucyAgAAAABnMzYwDQYJKoZIhvcNAQELBQAw\n"
+        "QjELMAkGA1UEBhMCVVMxHjAcBgNVBAoTFUdvb2dsZSBUcnVzdCBTZXJ2aWNlczET\n"
+        "MBEGA1UEAxMKR1RTIENBIDFPMTAeFw0yMDA1MDUwODMyMjlaFw0yMDA3MjgwODMy\n"
+        "MjlaMGUxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH\n"
+        "Ew1Nb3VudGFpbiBWaWV3MRMwEQYDVQQKEwpHb29nbGUgTExDMRQwEgYDVQQDDAsq\n"
+        "Lmdvb2dsZS5hdDBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABDuwtcBm/Zy4gj3P\n"
+        "aaBHMOHIypfqB7KBhbzJSux7ZQpuWhM4R4anNzOzjjrCyi4R+u2mkjeB/Bw6xzt8\n"
+        "ObtSEmWjggJdMIICWTAOBgNVHQ8BAf8EBAMCB4AwEwYDVR0lBAwwCgYIKwYBBQUH\n"
+        "AwEwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQUOCAX+hzjxyujW0S+sRabV0fAspkw\n"
+        "HwYDVR0jBBgwFoAUmNH4bhDrz5vsYJ8YkBug630J/SswZAYIKwYBBQUHAQEEWDBW\n"
+        "MCcGCCsGAQUFBzABhhtodHRwOi8vb2NzcC5wa2kuZ29vZy9ndHMxbzEwKwYIKwYB\n"
+        "BQUHMAKGH2h0dHA6Ly9wa2kuZ29vZy9nc3IyL0dUUzFPMS5jcnQwIQYDVR0RBBow\n"
+        "GIILKi5nb29nbGUuYXSCCWdvb2dsZS5hdDAhBgNVHSAEGjAYMAgGBmeBDAECAjAM\n"
+        "BgorBgEEAdZ5AgUDMC8GA1UdHwQoMCYwJKAioCCGHmh0dHA6Ly9jcmwucGtpLmdv\n"
+        "b2cvR1RTMU8xLmNybDCCAQUGCisGAQQB1nkCBAIEgfYEgfMA8QB3ALIeBcyLos2K\n"
+        "IE6HZvkruYolIGdr2vpw57JJUy3vi5BeAAABceQt+OQAAAQDAEgwRgIhANY9slOG\n"
+        "xYI8TgPHZ4QdaJAOkOUf+0OMQb47glFk/MAJAiEAlmNt5gNHqEKOhZAU5FB/PF9v\n"
+        "P6sD8oLupRxHiEMTtLIAdgBep3P531bA57U2SH3QSeAyepGaDIShEhKEGHWWgXFF\n"
+        "WAAAAXHkLfiiAAAEAwBHMEUCIQDcvmEUZcDHDCvX2cikDl8xTfGcWvKETvQL02qt\n"
+        "L/hVlQIgfvzN2SEzT2+VwuzgGbmC8CljAjVwxKMRc+BzlB0yFh4wDQYJKoZIhvcN\n"
+        "AQELBQADggEBAHsyJM0yEViV/Vo09mwmP3LAyNhK4hGl3+ueZRr7PE3zkbXA3Sb3\n"
+        "JAbdpaQJIGUb5PeiTCB5e/Zem8N6qh4WZOi09LVoVUvkOcCUTSFayRzkyTZK1gT5\n"
+        "9d/RWL4BfptK++pdkHWT24SnXw/OfeZBd537LWwhGo4X60RRmPIfvxenUcXlUull\n"
+        "ZKYMh5B/GkcHAUf6m79lsR5K82ryplDwHr7IpfPSlJyLZn7Y4n3G9HdFeqUVEw4y\n"
+        "J7GslEdOd8C5IaO0xLiw+A7kkUJ16LOYKncmaMnIdhL7ibpQltd8x9VHwM7tEw3g\n"
+        "52qHhy4vviLHs2SClrxmkINyRvqd9c/GHcI=\n"
+        "-----END CERTIFICATE-----\n")
 
     def setUp(self):
         """Create a fake reactor for these tests."""
@@ -381,6 +411,22 @@ class SSLVerifyingContextFactoryTests(unittest.TestCase,
 
         x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
                                                self._certificateText)
+        conn = DummyEndpoint()
+        result = contextFactory.verifyHostname(conn, x509, 0, 0, True)
+        self.assertTrue(result)
+
+    def test_verifyHostname_matching_wildcard(self):
+        """Check that ``verifyHostname()`` returns ``True`` when the
+        ``SSLVerifyingContextFactory.hostname`` matches the one found in the
+        level 0 certificate subject CN.
+        """
+        hostname = 'www.google.at'
+        url = 'https://' + hostname + '/recaptcha'
+        contextFactory = crypto.SSLVerifyingContextFactory(url)
+        self.assertEqual(contextFactory.hostname, hostname)
+
+        x509 = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                               self._wildcardcertificate)
         conn = DummyEndpoint()
         result = contextFactory.verifyHostname(conn, x509, 0, 0, True)
         self.assertTrue(result)
