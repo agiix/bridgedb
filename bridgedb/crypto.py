@@ -43,7 +43,6 @@ import hmac
 import io
 import logging
 import os
-import re
 import urllib.parse
 
 import OpenSSL
@@ -338,18 +337,34 @@ class SSLVerifyingContextFactory(ssl.CertificateOptions):
         :param bool okay: True if all the pyOpenSSL default checks on the
             certificate passed. False otherwise.
         """
-        commonName = x509.get_subject().commonName
-        logging.debug("Received cert at level %d: '%s'" % (depth, commonName))
+        subjectAltName = b''
+        foundAtlName = False
+        i=0
+        while i < x509.get_extension_count():
+            #get_short_name() returns a byte value, therefore it needs to match 
+            #with the string subjectAltName in byte format to match if the 
+            #SAN extension exists. 
+            if x509.get_extension(i).get_short_name() == b'subjectAltName':
+                subjectAltName = x509.get_extension(i).get_data()
+                foundAtlName = True
+                break
+            i+=1
+        #If SAN is not available, fall back to use the common name
+        if foundAtlName == False:
+            subjectAltName = str.encode(x509.get_subject().commonName)
+        logging.debug("Received cert at level %d: '%s'" % (depth, x509.get_subject().commonName))
 
         # We only want to verify that the hostname matches for the level 0
         # certificate:
         if okay and (depth == 0):
-            cn = commonName.replace('*', '.*')
-            hostnamesMatch = re.search(cn, self.hostname)
-            if not hostnamesMatch:
+            #Replaces the regex based matching. The hostname is being stripped 
+            #from the 'www'-prefix (since some certificates use wildcards) and 
+            #encoded into the byte format. find() returns -1 if not match was found
+            hostnamebytes = str.encode(self.hostname.strip('www'))
+            if subjectAltName.find(hostnamebytes) < 0:
                 logging.warn("Invalid certificate subject CN for '%s': '%s'"
-                             % (self.hostname, commonName))
+                             % (self.hostname, x509.get_subject().commonName))
                 return False
             logging.debug("Valid certificate subject CN for '%s': '%s'"
-                          % (self.hostname, commonName))
+                          % (self.hostname, x509.get_subject().commonName))
         return True
