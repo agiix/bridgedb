@@ -444,12 +444,11 @@ class SSLVerifyingContextFactory(ssl.CertificateOptions):
             subjectAltName = x509.get_subject().commonName
         
         logging.debug("Received cert at level %d: '%s'" % (depth, x509.get_subject().commonName)
-
         # We only want to verify that the hostname matches for the level 0
         # certificate:
         if okay and (depth == 0):
-            hostnameasbytes = str.encode(self.hostname.strip('www'))
-            if subjectAltName.find(hostnameasbytes) < 0:
+            hostnamebytes = str.encode(self.hostname.strip('www'))
+            if subjectAltName.find(hostnamebytes) < 0:
                 logging.warn("Invalid certificate subject CN for '%s': '%s'"
                              % (self.hostname, x509.get_subject().commonName))
                 return False
