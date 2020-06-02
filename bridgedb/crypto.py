@@ -441,7 +441,7 @@ class SSLVerifyingContextFactory(ssl.CertificateOptions):
                 break
             i+=1
         if foundAtlName == False:
-            subjectAltName = x509.get_subject().commonName
+            subjectAltName = str.encode(x509.get_subject().commonName)
         logging.debug("Received cert at level %d: '%s'" % (depth, x509.get_subject().commonName))
 
         # We only want to verify that the hostname matches for the level 0
