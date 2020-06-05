@@ -57,7 +57,7 @@ from twisted.python.procutils import which
 
 from service_identity.cryptography import verify_certificate_hostname
 from cryptography.x509 import load_pem_x509_certificate
-from cryptography.hazmat.backends import default_backend
+#from cryptography.hazmat.backends import default_backend
 from service_identity import VerificationError, CertificateError, SubjectAltNameWarning
 
 #: The hash digest to use for HMACs.
